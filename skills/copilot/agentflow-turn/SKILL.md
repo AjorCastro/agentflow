@@ -13,7 +13,13 @@ Before executing any step, check what already exists in `discovery/`, `plans/`, 
 
 ## Procedure
 
-### 1. Read the exchange folder
+### 1. Pull latest changes
+
+```
+git pull --rebase
+```
+
+### 2. Read the exchange folder
 
 Find the exchange folder: `.agentflow/features/*/`
 
@@ -28,7 +34,7 @@ If `current_turn` is not `cli`, stop and tell the user:
 If there are unresolved files in `decisions/`, stop and tell the user:
 > "There is an unresolved decision request. Please resolve it before asking me to continue."
 
-### 2. Read all relevant context
+### 3. Read all relevant context
 
 Depending on the current phase, read:
 - `specs/` — requirements

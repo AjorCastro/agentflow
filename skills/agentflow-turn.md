@@ -8,7 +8,13 @@ Before executing any step, check if it was already done. Look for existing files
 
 ## Before you start
 
-Read these files in order:
+Pull latest changes from origin first:
+
+```bash
+git pull --rebase
+```
+
+Then read these files in order:
 
 1. `.agentflow/features/*/CONFIG.md` — understand the feature, scope, and policies
 2. `.agentflow/features/*/STATUS.md` — understand current phase, turn, and next action
