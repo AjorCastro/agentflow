@@ -72,11 +72,16 @@ agentflow install-skills
 
 # GitHub Copilot CLI
 agentflow install-skills --agent copilot
+
+# OpenAI Codex CLI
+agentflow install-skills --agent codex
 ```
 
-**Claude Code** — writes `.md` files to `~/.claude/commands/`, available as slash commands.
-
-**Copilot CLI** — writes skill folders to `~/.copilot/skills/`. After installing, run `/skills reload` inside Copilot CLI to activate them.
+| Agent | Install location | Activation |
+|---|---|---|
+| Claude Code | `~/.claude/commands/` | Available as `/agentflow-*` slash commands |
+| Copilot CLI | `~/.copilot/skills/` | Run `/skills reload` inside Copilot |
+| Codex CLI | `~/.codex/skills/` | Auto-detected from `description` field |
 
 #### Skills (all agents)
 
@@ -214,15 +219,9 @@ agentflow/
     templates.go                 — file content generators
     validate.go                  — structure validation, path helpers
   skills/
-    agentflow-setup.md           — Claude Code skill
-    agentflow-init.md            — Claude Code skill
-    agentflow-turn.md            — Claude Code skill
-    agentflow-close.md           — Claude Code skill
-    copilot/
-      agentflow-setup/SKILL.md   — Copilot CLI skill
-      agentflow-init/SKILL.md    — Copilot CLI skill
-      agentflow-turn/SKILL.md    — Copilot CLI skill
-      agentflow-close/SKILL.md   — Copilot CLI skill
+    agentflow-*.md               — Claude Code skills
+    copilot/agentflow-*/SKILL.md — Copilot CLI skills
+    codex/agentflow-*/SKILL.md   — Codex CLI skills
     embed.go                     — embeds all skills into the binary
   docs/
     DECISIONS.md                 — design decisions log

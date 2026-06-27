@@ -32,8 +32,10 @@ func runInstallSkills(agent string) error {
 		return installClaudeSkills()
 	case "copilot":
 		return installCopilotSkills()
+	case "codex":
+		return installCodexSkills()
 	default:
-		return fmt.Errorf("unknown agent %q — supported: claude, copilot", agent)
+		return fmt.Errorf("unknown agent %q — supported: claude, copilot, codex", agent)
 	}
 }
 
@@ -75,16 +77,31 @@ func installClaudeSkills() error {
 	return nil
 }
 
+// installCodexSkills copies codex/<skill>/ folders to ~/.codex/skills/
+func installCodexSkills() error {
+	codexHome := os.Getenv("CODEX_HOME")
+	if codexHome == "" {
+		codexHome = filepath.Join(os.Getenv("HOME"), ".codex")
+	}
+	target := filepath.Join(codexHome, "skills")
+	return installSkillFolders("codex", target, "Codex CLI", "")
+}
+
 // installCopilotSkills copies copilot/<skill>/ folders to ~/.copilot/skills/
 func installCopilotSkills() error {
 	target := filepath.Join(os.Getenv("HOME"), ".copilot", "skills")
+	return installSkillFolders("copilot", target, "Copilot CLI", "run /skills reload to activate")
+}
+
+// installSkillFolders copies embedded <srcDir>/<skill>/ folders to target.
+func installSkillFolders(srcDir, target, agentLabel, hint string) error {
 	if err := os.MkdirAll(target, 0755); err != nil {
 		return fmt.Errorf("could not create %s: %w", target, err)
 	}
 
-	entries, err := fs.ReadDir(skills.FS, "copilot")
+	entries, err := fs.ReadDir(skills.FS, srcDir)
 	if err != nil {
-		return fmt.Errorf("could not read embedded copilot skills: %w", err)
+		return fmt.Errorf("could not read embedded %s skills: %w", srcDir, err)
 	}
 
 	installed := 0
@@ -98,13 +115,12 @@ func installCopilotSkills() error {
 			return fmt.Errorf("could not create %s: %w", destDir, err)
 		}
 
-		// Copy all files inside the skill directory.
-		skillFS, err := fs.Sub(skills.FS, filepath.Join("copilot", skillName))
+		skillFS, err := fs.Sub(skills.FS, filepath.Join(srcDir, skillName))
 		if err != nil {
 			return fmt.Errorf("could not access skill %s: %w", skillName, err)
 		}
-		files, _ := fs.ReadDir(skillFS, ".")
-		for _, f := range files {
+		skillFiles, _ := fs.ReadDir(skillFS, ".")
+		for _, f := range skillFiles {
 			if f.IsDir() {
 				continue
 			}
@@ -122,8 +138,12 @@ func installCopilotSkills() error {
 		installed++
 	}
 
-	fmt.Printf("\n%d skill(s) installed in %s\n", installed, target)
-	fmt.Println("\nAvailable in Copilot CLI (run /skills reload):")
+	msg := fmt.Sprintf("\n%d skill(s) installed in %s\n", installed, target)
+	if hint != "" {
+		msg += fmt.Sprintf("(%s)\n", hint)
+	}
+	fmt.Print(msg)
+	fmt.Printf("\nAvailable in %s:\n", agentLabel)
 	fmt.Println("  agentflow-setup   — set up a new project and push to GitHub")
 	fmt.Println("  agentflow-init    — initialize workspace from agentflow-init.md")
 	fmt.Println("  agentflow-turn    — execute the CLI Agent's turn")
