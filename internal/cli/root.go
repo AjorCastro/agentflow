@@ -14,6 +14,7 @@ to coordinate work between a Human, a Web Reviewer, and a CLI Coding Agent.`,
 	root.AddCommand(newStatusCmd())
 	root.AddCommand(newValidateCmd())
 	root.AddCommand(newCloseCmd())
+	root.AddCommand(newInstallSkillsCmd())
 
 	return root
 }
