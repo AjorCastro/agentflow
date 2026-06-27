@@ -29,6 +29,21 @@ AgentFlow creates a **structured exchange folder** on the feature branch that al
 
 ---
 
+## Quickstart
+
+```bash
+# 1. Install the CLI
+go install github.com/agentflow/agentflow/cmd/agentflow@latest
+
+# 2. Install the skills globally (available in any project)
+agentflow install-skills
+```
+
+That's it. You now have the `agentflow` command and four skills ready in Claude Code:
+`/agentflow-setup` · `/agentflow-init` · `/agentflow-turn` · `/agentflow-close`
+
+---
+
 ## Install locally
 
 Requires Go 1.22 or later.
