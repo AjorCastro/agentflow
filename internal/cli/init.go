@@ -167,14 +167,24 @@ func createExchangeStructure(exchangeDir, featureID, title, root, branch, worktr
 		}
 	}
 
-	// Write files.
+	// Write root files.
 	files := map[string]string{
-		"README.md":  protocol.ReadmeMD(featureID, title),
-		"STATUS.md":  protocol.StatusMD(),
-		"CONFIG.md":  protocol.ConfigMD(featureID, title, root, branch, worktree, exchangeRel),
+		"README.md": protocol.ReadmeMD(featureID, title),
+		"STATUS.md": protocol.StatusMD(),
+		"CONFIG.md": protocol.ConfigMD(featureID, title, root, branch, worktree, exchangeRel),
 	}
 	for name, content := range files {
 		if err := os.WriteFile(filepath.Join(exchangeDir, name), []byte(content), 0644); err != nil {
+			return err
+		}
+	}
+
+	// Write prompt files.
+	prompts := map[string]string{
+		"web-agent-role.md": protocol.WebAgentRoleMD(),
+	}
+	for name, content := range prompts {
+		if err := os.WriteFile(filepath.Join(exchangeDir, "prompts", name), []byte(content), 0644); err != nil {
 			return err
 		}
 	}
