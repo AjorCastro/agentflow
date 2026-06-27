@@ -67,27 +67,25 @@ The `skills/` directory contains prompt files for Claude Code (or any compatible
 They are embedded in the binary — install them with:
 
 ```bash
+# Claude Code (default)
 agentflow install-skills
+
+# GitHub Copilot CLI
+agentflow install-skills --agent copilot
 ```
 
-This writes the skills to `~/.claude/commands/`, making them available in any project.
+**Claude Code** — writes `.md` files to `~/.claude/commands/`, available as slash commands.
 
-You can also install to a custom directory:
+**Copilot CLI** — writes skill folders to `~/.copilot/skills/`. After installing, run `/skills reload` inside Copilot CLI to activate them.
 
-```bash
-agentflow install-skills --target /path/to/.claude/commands
-```
-
-#### Global skills (available in any project)
-
-These skills are installed by `agentflow install-skills` and are used before a workspace exists:
+#### Skills (all agents)
 
 | Skill | When to use |
 |---|---|
-| `/agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
-| `/agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
-| `/agentflow-turn`  | Any CLI Agent turn: read STATUS.md, act on current phase, commit and push |
-| `/agentflow-close` | After merge: remove worktree and delete branch |
+| `agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
+| `agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
+| `agentflow-turn`  | Any CLI Agent turn: read STATUS.md, act on current phase, commit and push |
+| `agentflow-close` | After merge: remove worktree and delete branch |
 
 
 ---
@@ -216,11 +214,16 @@ agentflow/
     templates.go                 — file content generators
     validate.go                  — structure validation, path helpers
   skills/
-    agentflow-setup.md           — /agentflow-setup (new project setup)
-    agentflow-init.md            — /agentflow-init (workspace init from WEB file)
-    agentflow-turn.md            — /agentflow-turn (CLI Agent turn)
-    agentflow-close.md           — /agentflow-close (cleanup after merge)
-    embed.go                     — embeds skills into the binary
+    agentflow-setup.md           — Claude Code skill
+    agentflow-init.md            — Claude Code skill
+    agentflow-turn.md            — Claude Code skill
+    agentflow-close.md           — Claude Code skill
+    copilot/
+      agentflow-setup/SKILL.md   — Copilot CLI skill
+      agentflow-init/SKILL.md    — Copilot CLI skill
+      agentflow-turn/SKILL.md    — Copilot CLI skill
+      agentflow-close/SKILL.md   — Copilot CLI skill
+    embed.go                     — embeds all skills into the binary
   docs/
     DECISIONS.md                 — design decisions log
     WEB-AGENT-ROLE.md            — full Web Reviewer instructions (reference copy)
