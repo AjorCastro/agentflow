@@ -67,6 +67,15 @@ func CommitAll(worktreeDir, message string) error {
 	return nil
 }
 
+// HasRemote returns true if the repo at dir has at least one remote configured.
+func HasRemote(dir string) bool {
+	out, err := exec.Command("git", "-C", dir, "remote").Output()
+	if err != nil {
+		return false
+	}
+	return strings.TrimSpace(string(out)) != ""
+}
+
 // ListWorktrees returns the paths of all worktrees linked to the repo at dir,
 // excluding the main worktree itself.
 func ListWorktrees(dir string) ([]string, error) {

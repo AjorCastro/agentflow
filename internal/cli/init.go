@@ -65,6 +65,15 @@ func runInit(opts *initOptions) error {
 		return fmt.Errorf("root branch %q does not exist in %s", opts.root, repoAbs)
 	}
 
+	// Validate remote exists if push is requested.
+	if opts.push && !gitops.HasRemote(repoAbs) {
+		return fmt.Errorf(
+			"--push requires a remote configured in this repository\n" +
+			"Add one first, e.g.:\n" +
+			"  git remote add origin git@github.com:<user>/<repo>.git",
+		)
+	}
+
 	// Derive feature ID early; exchange path is resolved after workDir is known.
 	featureID := protocol.FeatureIDFromBranch(opts.branch)
 	if opts.title == "" {
