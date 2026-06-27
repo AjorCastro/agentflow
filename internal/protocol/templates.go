@@ -66,13 +66,13 @@ func StatusMD() string {
 intake
 
 ## Current turn
-human
+web
 
 ## Status
 Initialized.
 
 ## Next action
-Define the feature and ask the CLI Agent to run the initial AgentFlow skill.
+Read the exchange folder and begin Phase 1 — Discovery.
 
 ## Last update
 %s
@@ -179,8 +179,8 @@ CLI Agent writes task results to ` + "`tasks/`" + `. Your job:
 
 ### Decision requests
 
-When the CLI Agent creates a file in ` + "`decisions/`" + "`, `STATUS.md`" + ` will show ` + "`current_turn: human`" + `.
-Read it, discuss with the Human, write the resolution back to that file, then return the turn to ` + "`cli`" + ` in ` + "`STATUS.md`" + `.
+When the CLI Agent creates a file in ` + "`decisions/`" + "`, `STATUS.md`" + ` will show ` + "`current_turn: web`" + `.
+Read it, discuss with the Human if needed, write the resolution back to that file, then return the turn to ` + "`cli`" + ` in ` + "`STATUS.md`" + `.
 
 ---
 
@@ -193,7 +193,7 @@ Edit ` + "`STATUS.md`" + ` directly on GitHub (feature branch):
 <intake | discovery | planning | implementation | review | done>
 
 ## Current turn
-<human | web | cli>
+<web | cli>
 
 ## Status
 <short description>

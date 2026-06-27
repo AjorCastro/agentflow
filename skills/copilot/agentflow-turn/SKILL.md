@@ -68,7 +68,7 @@ Create a file at `decisions/decision-<YYYY-MM-DD>-<short-slug>.md`:
 <your recommendation if any>
 ```
 
-Update STATUS.md with `current_turn: human` and stop.
+Update STATUS.md with `current_turn: web` and stop. The Web Reviewer will read the decision file, discuss with the Human if needed, and return the turn to `cli`.
 
 ### 5. When you finish
 

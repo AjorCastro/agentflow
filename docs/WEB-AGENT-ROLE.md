@@ -148,9 +148,9 @@ At any point the CLI Agent may create a file in:
 .agentflow/features/<feature-id>/decisions/
 ```
 
-When this happens, `STATUS.md` will show `current_turn: human` and `attention_required: true`.
+When this happens, `STATUS.md` will show `current_turn: web`.
 
-Read the decision file, discuss with the Human, and write the resolution back to that file. Then update `STATUS.md` to return the turn to the CLI Agent.
+Read the decision file, discuss with the Human if needed, and write the resolution back to that file. Then update `STATUS.md` to return the turn to `cli`.
 
 ---
 
@@ -163,7 +163,7 @@ When you approve a phase or resolve a decision, edit `STATUS.md` directly on Git
 <intake | discovery | planning | implementation | review | done>
 
 ## Current turn
-<human | web | cli>
+<web | cli>
 
 ## Status
 <short description of current state>

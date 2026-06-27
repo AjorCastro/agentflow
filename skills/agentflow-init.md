@@ -13,7 +13,7 @@ Before executing any step, check if it was already done. Skip completed steps si
 The Web Reviewer created `agentflow-init.md` directly on GitHub. Pull to get it locally:
 
 ```bash
-git pull
+git pull --rebase
 ```
 
 ### 2. Find and read agentflow-init.md
@@ -80,7 +80,7 @@ agentflow status
 Confirm that:
 - The exchange folder was created
 - `phase` is `intake`
-- `turn` is `human`
+- `turn` is `web`
 - `next_action` is `run_initial_cli_skill`
 
 ### 7. Print summary

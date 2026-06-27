@@ -25,20 +25,20 @@ func TestNewInitialState(t *testing.T) {
 	if s.CurrentPhase != "intake" {
 		t.Errorf("CurrentPhase = %q, want intake", s.CurrentPhase)
 	}
-	if s.CurrentTurn != "human" {
-		t.Errorf("CurrentTurn = %q, want human", s.CurrentTurn)
+	if s.CurrentTurn != "web" {
+		t.Errorf("CurrentTurn = %q, want web", s.CurrentTurn)
 	}
 	if s.Status != "initialized" {
 		t.Errorf("Status = %q, want initialized", s.Status)
 	}
-	if !s.AttentionRequired {
-		t.Error("AttentionRequired should be true")
+	if s.AttentionRequired {
+		t.Error("AttentionRequired should be false")
 	}
 	if s.LastResult != nil {
 		t.Error("LastResult should be nil")
 	}
-	if s.NextAction != "run_initial_cli_skill" {
-		t.Errorf("NextAction = %q, want run_initial_cli_skill", s.NextAction)
+	if s.NextAction != "begin_discovery" {
+		t.Errorf("NextAction = %q, want begin_discovery", s.NextAction)
 	}
 	if s.CreatedAt == "" {
 		t.Error("CreatedAt should not be empty")

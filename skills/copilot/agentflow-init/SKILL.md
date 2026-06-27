@@ -17,7 +17,7 @@ Before executing any step, check if it was already done. Skip completed steps si
 
 The Web Reviewer created `agentflow-init.md` on GitHub. Pull it first:
 ```
-git pull
+git pull --rebase
 ```
 
 ### 2. Find and read agentflow-init.md
@@ -72,11 +72,11 @@ The `--push` flag is enabled by default. If there is no remote, `agentflow init`
 Run `agentflow status` and confirm:
 - Exchange folder exists
 - `phase` is `intake`
-- `turn` is `human`
+- `turn` is `web`
 
 ## Success criteria
 
-- `agentflow status` shows the exchange folder with `phase: intake`, `turn: human`
+- `agentflow status` shows the exchange folder with `phase: intake`, `turn: web`
 - `agentflow-init.md` no longer exists on `develop`
 - Branch and worktree are pushed to GitHub
 

@@ -24,7 +24,7 @@ Check each step before executing. Skip steps that are already complete. If the w
 
 The Web Reviewer created `agentflow-init.md` on GitHub. Pull first:
 ```
-git pull
+git pull --rebase
 ```
 
 ### Parse agentflow-init.md
@@ -62,7 +62,7 @@ Run `agentflow status` to check if a workspace for this branch already exists.
 Run `agentflow status`. Confirm:
 - Exchange folder is listed
 - `phase: intake`
-- `turn: human`
+- `turn: web`
 
 
 ## Constraints
@@ -73,7 +73,7 @@ Run `agentflow status`. Confirm:
 
 ## Success Criteria
 
-- `agentflow status` shows exchange folder with `phase: intake`, `turn: human`
+- `agentflow status` shows exchange folder with `phase: intake`, `turn: web`
 - `agentflow-init.md` no longer exists in the repo root
 - Branch and worktree are pushed to GitHub
 

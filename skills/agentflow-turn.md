@@ -63,7 +63,7 @@ With this content:
 <your recommendation if you have one>
 ```
 
-Then update STATUS.md and state.json with `current_turn: human` and stop. Do not continue until the Human resolves the decision.
+Then update STATUS.md and state.json with `current_turn: web` and stop. The Web Reviewer will read the decision file, discuss with the Human if needed, and return the turn to `cli`.
 
 ## When you finish
 

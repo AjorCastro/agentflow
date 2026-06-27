@@ -75,7 +75,7 @@ When ambiguity or risk is found, create `decisions/decision-<YYYY-MM-DD>-<slug>.
 <your recommendation if any>
 ```
 
-Update STATUS.md with `current_turn: human` and stop.
+Update STATUS.md with `current_turn: web` and stop. The Web Reviewer will read the decision file, discuss with the Human if needed, and return the turn to `cli`.
 
 ### Write result file
 
