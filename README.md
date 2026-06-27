@@ -31,16 +31,59 @@ AgentFlow creates a **structured exchange folder** on the feature branch that al
 
 ## Quickstart
 
+### Step 1 — Install
+
 ```bash
-# 1. Install the CLI
+# Install the CLI
 go install github.com/AjorCastro/agentflow/cmd/agentflow@latest
 
-# 2. Install the skills globally (available in any project)
-agentflow install-skills
+# Install the skills globally
+agentflow install-skills                  # Claude Code (default)
+agentflow install-skills --agent copilot  # Copilot CLI
+agentflow install-skills --agent codex    # Codex CLI
 ```
 
-That's it. You now have the `agentflow` command and four skills ready in Claude Code:
-`/agentflow-setup` · `/agentflow-init` · `/agentflow-turn` · `/agentflow-close`
+### Step 2 — Set up a new project
+
+Create a new project folder, open it in your CLI Agent (Claude Code, Copilot, Codex), and run:
+
+```
+/agentflow-setup
+```
+
+The CLI Agent will:
+- Initialize git on `develop`
+- Create `docs/WEB-AGENT-ROLE.md` with instructions for the Web Reviewer
+- Create the GitHub repository and push
+
+### Step 3 — Brief the Web Reviewer
+
+Share the GitHub repository URL with your Web Reviewer (ChatGPT, Claude.ai, Gemini, etc.) and tell them:
+
+> "Read `docs/WEB-AGENT-ROLE.md` — it explains your role. Then let's define the first feature."
+
+### Step 4 — Initialize a feature
+
+The Web Reviewer will ask clarifying questions, propose the branch/worktree names, and create `agentflow-init.md` in the repo root. Then ask your CLI Agent to run:
+
+```
+/agentflow-init
+```
+
+### Step 5 — Work
+
+From this point, the cycle is:
+- CLI Agent's turn → `/agentflow-turn`
+- Web Reviewer reviews on GitHub, approves or redirects
+- Repeat until the feature is done
+
+### Step 6 — Close
+
+After merging to `develop`, ask the CLI Agent to run:
+
+```
+/agentflow-close
+```
 
 ---
 
