@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/agentflow/agentflow/internal/gitops"
-	"github.com/agentflow/agentflow/internal/protocol"
+	"github.com/AjorCastro/agentflow/internal/gitops"
+	"github.com/AjorCastro/agentflow/internal/protocol"
 	"github.com/spf13/cobra"
 )
 

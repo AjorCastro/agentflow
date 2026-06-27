@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/agentflow/agentflow/skills"
+	"github.com/AjorCastro/agentflow/skills"
 	"github.com/spf13/cobra"
 )
 

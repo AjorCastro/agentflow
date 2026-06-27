@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/agentflow/agentflow/internal/cli"
+	"github.com/AjorCastro/agentflow/internal/cli"
 )
 
 func main() {

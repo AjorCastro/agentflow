@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/agentflow/agentflow/internal/protocol"
+	"github.com/AjorCastro/agentflow/internal/protocol"
 )
 
 func TestNewInitialState(t *testing.T) {

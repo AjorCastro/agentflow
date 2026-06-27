@@ -1,4 +1,4 @@
-module github.com/agentflow/agentflow
+module github.com/AjorCastro/agentflow
 
 go 1.24.4
 
