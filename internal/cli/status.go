@@ -53,10 +53,18 @@ func runStatus(repo string) error {
 		fmt.Printf("Git     :\n%s\n", gitStatus)
 	}
 
-	// Find AgentFlow exchange folders.
-	exchanges, err := protocol.FindExchangeFolders(repoAbs)
-	if err != nil {
-		return err
+	// Collect all directories to search: current repo + linked worktrees.
+	searchDirs := []string{repoAbs}
+	worktrees, _ := gitops.ListWorktrees(repoAbs)
+	searchDirs = append(searchDirs, worktrees...)
+
+	var exchanges []string
+	for _, dir := range searchDirs {
+		found, err := protocol.FindExchangeFolders(dir)
+		if err != nil {
+			continue
+		}
+		exchanges = append(exchanges, found...)
 	}
 
 	if len(exchanges) == 0 {

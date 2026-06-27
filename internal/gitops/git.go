@@ -67,6 +67,29 @@ func CommitAll(worktreeDir, message string) error {
 	return nil
 }
 
+// ListWorktrees returns the paths of all worktrees linked to the repo at dir,
+// excluding the main worktree itself.
+func ListWorktrees(dir string) ([]string, error) {
+	out, err := exec.Command("git", "-C", dir, "worktree", "list", "--porcelain").Output()
+	if err != nil {
+		return nil, fmt.Errorf("git worktree list failed: %w", err)
+	}
+
+	var paths []string
+	first := true
+	for _, line := range strings.Split(string(out), "\n") {
+		if strings.HasPrefix(line, "worktree ") {
+			path := strings.TrimPrefix(line, "worktree ")
+			if first {
+				first = false // skip main worktree
+				continue
+			}
+			paths = append(paths, path)
+		}
+	}
+	return paths, nil
+}
+
 // PushBranch pushes branch to origin, setting upstream.
 func PushBranch(worktreeDir, branch string) error {
 	out, err := exec.Command("git", "-C", worktreeDir, "push", "-u", "origin", branch).CombinedOutput()
