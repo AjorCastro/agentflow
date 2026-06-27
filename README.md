@@ -72,20 +72,15 @@ These skills are installed by `agentflow install-skills` and are used before a w
 | `/agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
 | `/agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
 
-#### Project skills (installed per worktree)
+#### Project skill
 
-These skills are copied into `.claude/commands/` inside the worktree by `agentflow init`.
-They are used by the CLI Agent during feature work:
+One skill covers the entire CLI Agent workflow:
 
 | Skill | When to use |
 |---|---|
-| `/agentflow-start` | First CLI turn: run discovery, write results, hand off to Web Reviewer |
-| `/agentflow-plan`  | After discovery is approved: create implementation plan, hand off |
-| `/agentflow-implement` | After plan is approved: execute implementation, write results |
-| `/agentflow-decision` | When ambiguity or risk is found: create decision request, stop |
-| `/agentflow-handoff` | At the end of any turn: update STATUS.md, state.json, commit and push |
+| `/agentflow-turn` | Any time it is the CLI Agent's turn: reads STATUS.md, acts on the current phase, commits and pushes |
 
-> Project skills are coming soon.
+The CLI Agent reads the exchange folder, understands where it is in the flow, and acts accordingly — no phase-specific commands needed.
 
 ---
 
@@ -215,6 +210,7 @@ agentflow/
   skills/
     agentflow-setup.md           — /agentflow-setup global skill (new project setup)
     agentflow-init.md            — /agentflow-init global skill (workspace init)
+    agentflow-turn.md            — /agentflow-turn project skill (CLI Agent turn)
     embed.go                     — embeds skills into the binary
   docs/
     DECISIONS.md                 — design decisions log
