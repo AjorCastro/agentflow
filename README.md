@@ -34,7 +34,7 @@ AgentFlow creates a **structured exchange folder** on the feature branch that al
 Requires Go 1.22 or later.
 
 ```bash
-git clone <this-repo>
+git clone https://github.com/AjorCastro/agentflow
 cd agentflow
 go build -o agentflow ./cmd/agentflow
 sudo mv agentflow /usr/local/bin/   # or any directory on your PATH
@@ -45,6 +45,22 @@ Or install directly:
 ```bash
 go install github.com/agentflow/agentflow/cmd/agentflow@latest
 ```
+
+### Install the CLI Agent skills
+
+The `skills/` directory contains prompt files for Claude Code (or any compatible CLI agent).
+Install them globally so they are available in any project:
+
+```bash
+cp skills/* ~/.claude/commands/
+```
+
+Available skills:
+
+| Skill | When to use |
+|---|---|
+| `/agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
+| `/agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
 
 ---
 
@@ -171,6 +187,9 @@ agentflow/
     state.go                     — state.json read/write
     templates.go                 — file content generators
     validate.go                  — structure validation, path helpers
+  skills/
+    agentflow-setup.md           — /agentflow-setup skill for CLI Agent
+    agentflow-init.md            — /agentflow-init skill for CLI Agent
   docs/
     DECISIONS.md                 — design decisions log
     WEB-AGENT-ROLE.md            — full Web Reviewer instructions (reference copy)
