@@ -71,16 +71,9 @@ These skills are installed by `agentflow install-skills` and are used before a w
 |---|---|
 | `/agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
 | `/agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
+| `/agentflow-turn`  | Any CLI Agent turn: read STATUS.md, act on current phase, commit and push |
+| `/agentflow-close` | After merge: remove worktree and delete branch |
 
-#### Project skill
-
-One skill covers the entire CLI Agent workflow:
-
-| Skill | When to use |
-|---|---|
-| `/agentflow-turn` | Any time it is the CLI Agent's turn: reads STATUS.md, acts on the current phase, commits and pushes |
-
-The CLI Agent reads the exchange folder, understands where it is in the flow, and acts accordingly — no phase-specific commands needed.
 
 ---
 
@@ -208,9 +201,10 @@ agentflow/
     templates.go                 — file content generators
     validate.go                  — structure validation, path helpers
   skills/
-    agentflow-setup.md           — /agentflow-setup global skill (new project setup)
-    agentflow-init.md            — /agentflow-init global skill (workspace init)
-    agentflow-turn.md            — /agentflow-turn project skill (CLI Agent turn)
+    agentflow-setup.md           — /agentflow-setup (new project setup)
+    agentflow-init.md            — /agentflow-init (workspace init from WEB file)
+    agentflow-turn.md            — /agentflow-turn (CLI Agent turn)
+    agentflow-close.md           — /agentflow-close (cleanup after merge)
     embed.go                     — embeds skills into the binary
   docs/
     DECISIONS.md                 — design decisions log
