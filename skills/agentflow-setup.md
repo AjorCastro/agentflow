@@ -2,6 +2,10 @@
 
 Initialize a new project repository and publish it so the Web Reviewer can start working.
 
+## Idempotency
+
+Before executing any step, check if it was already done. Skip completed steps silently and continue from where things left off. Never duplicate work or overwrite existing results. If everything is already done, say so and stop.
+
 ## Steps
 
 ### 1. Verify prerequisites
@@ -22,17 +26,12 @@ Use the current directory name as the repository name unless the Human specifies
 ### 3. Initialize git
 
 Check if a git repository already exists (`git rev-parse --git-dir`).
-
-If it does not exist:
-```bash
-git init -b develop
-```
-
-If it already exists, verify the current branch. If it is not `develop`, tell the Human and stop — do not change branches without explicit instruction.
+- If it does not exist → run `git init -b develop`
+- If it already exists → skip, verify current branch is `develop`. If not, tell the Human and stop.
 
 ### 4. Create initial project structure
 
-Create the following files if they do not already exist:
+Create the following files **only if they do not already exist**:
 
 **`.gitignore`**
 ```
@@ -175,22 +174,23 @@ Short, action-oriented messages to the Human:
 
 ### 5. Make the initial commit
 
-Stage and commit all created files:
-
-```bash
-git add -A
-git commit -m "chore: initial project setup"
-```
+Check if there are staged or unstaged changes (`git status --short`).
+- If there are changes → stage and commit:
+  ```bash
+  git add -A
+  git commit -m "chore: initial project setup"
+  ```
+- If the tree is already clean → skip.
 
 ### 6. Create the GitHub repository
 
-Use the GitHub CLI to create the repository:
-
-```bash
-gh repo create <project-name> --public --source . --remote origin --push
-```
-
-If the Human wants a private repository, use `--private` instead of `--public`. When in doubt, ask.
+Check if a remote named `origin` already exists (`git remote`).
+- If it does not exist → create the repo and push:
+  ```bash
+  gh repo create <project-name> --public --source . --remote origin --push
+  ```
+  If the Human wants a private repository, use `--private`. When in doubt, ask.
+- If `origin` already exists → check if the branch is up to date. If not, push. If already pushed → skip.
 
 ### 7. Print summary
 

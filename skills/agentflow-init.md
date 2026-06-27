@@ -2,6 +2,10 @@
 
 Read the `agentflow-init.md` file created by the Web Reviewer and initialize the AgentFlow workspace.
 
+## Idempotency
+
+Before executing any step, check if it was already done. Skip completed steps silently and continue from where things left off. Never duplicate work or overwrite existing results. If everything is already done, say so and stop.
+
 ## Steps
 
 ### 1. Find and read agentflow-init.md
@@ -28,7 +32,9 @@ If you are not on the root branch (usually `develop`), stop and tell the Human w
 
 ### 3. Run agentflow init
 
-Run the following command with the parameters extracted from `agentflow-init.md`:
+Check if the workspace already exists by running `agentflow status`.
+- If the exchange folder for this branch already exists → skip init, go to step 4.
+- If it does not exist → run:
 
 ```bash
 agentflow init \
@@ -58,14 +64,15 @@ Confirm that:
 
 ### 5. Remove agentflow-init.md
 
-The file has been consumed. Remove it and commit:
-
-```bash
-git rm agentflow-init.md
-git -C <worktree> add -A
-git -C <worktree> commit -m "chore: remove agentflow-init.md after workspace setup"
-git -C <worktree> push
-```
+Check if `agentflow-init.md` still exists in the repo root.
+- If it exists → remove it and commit:
+  ```bash
+  git rm agentflow-init.md
+  git -C <worktree> add -A
+  git -C <worktree> commit -m "chore: remove agentflow-init.md after workspace setup"
+  git -C <worktree> push
+  ```
+- If it was already removed → skip.
 
 ### 6. Print summary
 

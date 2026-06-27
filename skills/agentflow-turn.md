@@ -2,6 +2,10 @@
 
 It is your turn to act. Read the current state of the exchange folder and do what is expected of you.
 
+## Idempotency
+
+Before executing any step, check if it was already done. Look for existing files in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.
+
 ## Before you start
 
 Read these files in order:

@@ -2,6 +2,10 @@
 
 The feature has been merged. Clean up the workspace.
 
+## Idempotency
+
+Before executing any step, check if it was already done. If the worktree is already removed or the branch already deleted, skip those steps silently and continue. If everything is already clean, say so and stop.
+
 ## Steps
 
 ### 1. Read the current state
