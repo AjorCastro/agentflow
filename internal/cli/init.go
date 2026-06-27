@@ -39,7 +39,7 @@ func newInitCmd() *cobra.Command {
 	cmd.Flags().StringVar(&opts.worktree, "worktree", "", "Worktree path (required unless --no-worktree)")
 	cmd.Flags().StringVar(&opts.exchange, "exchange", "", "Exchange folder path (default: .agentflow/features/<feature-id>)")
 	cmd.Flags().StringVar(&opts.title, "title", "", "Human-readable feature title")
-	cmd.Flags().BoolVar(&opts.push, "push", false, "Push branch to origin after init")
+	cmd.Flags().BoolVar(&opts.push, "push", true, "Push branch to origin after init (default true; use --push=false to skip)")
 	cmd.Flags().BoolVar(&opts.adopt, "adopt", false, "Adopt an existing branch instead of creating a new one")
 	cmd.Flags().BoolVar(&opts.noWorktree, "no-worktree", false, "Skip worktree creation; operate on the current repo")
 
