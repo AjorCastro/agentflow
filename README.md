@@ -54,6 +54,7 @@ go install github.com/agentflow/agentflow/cmd/agentflow@latest
 agentflow init      Initialize a new AgentFlow workspace
 agentflow status    Show current workspace status
 agentflow validate  Validate workspace structure
+agentflow close     Close a feature after merge
 ```
 
 ---
@@ -81,7 +82,7 @@ agentflow init \
 | `--worktree`    | *(required unless --no-worktree)*    | Worktree directory path                         |
 | `--exchange`    | `.agentflow/features/<feature-id>`   | Exchange folder path                            |
 | `--title`       | *(feature-id)*                       | Human-readable feature title                    |
-| `--push`        | `false`                              | Push branch to origin after init                |
+| `--push`        | `true`                               | Push branch to origin after init                |
 | `--adopt`       | `false`                              | Attach worktree to an existing branch           |
 | `--no-worktree` | `false`                              | Skip worktree; operate on current repo branch   |
 
@@ -119,6 +120,27 @@ agentflow init \
 
 6. Repeat for planning, implementation, review, etc.
 
+7. After merge to develop, **Human** runs `agentflow close` to clean up.
+
+---
+
+## Example: `agentflow close`
+
+```bash
+agentflow close --branch feature/my-feature
+```
+
+Verifies the branch is merged, removes the linked worktree, and deletes the local branch.
+
+### Flags
+
+| Flag              | Default  | Description                              |
+|-------------------|----------|------------------------------------------|
+| `--repo`          | `.`      | Path to the git repository               |
+| `--branch`        | *(required)* | Feature branch to close              |
+| `--delete-remote` | `false`  | Also delete the branch on origin         |
+| `--force`         | `false`  | Close even if branch is not fully merged |
+
 ---
 
 ## Running tests
@@ -139,6 +161,7 @@ agentflow/
     init.go                      — agentflow init
     status.go                    — agentflow status
     validate.go                  — agentflow validate
+    close.go                     — agentflow close
   internal/gitops/
     git.go                       — git operations via os/exec
   internal/protocol/
