@@ -33,7 +33,7 @@ AgentFlow creates a **structured exchange folder** on the feature branch that al
 
 ```bash
 # 1. Install the CLI
-go install github.com/agentflow/agentflow/cmd/agentflow@latest
+go install github.com/AjorCastro/agentflow/cmd/agentflow@latest
 
 # 2. Install the skills globally (available in any project)
 agentflow install-skills
@@ -58,7 +58,7 @@ sudo mv agentflow /usr/local/bin/   # or any directory on your PATH
 Or install directly:
 
 ```bash
-go install github.com/agentflow/agentflow/cmd/agentflow@latest
+go install github.com/AjorCastro/agentflow/cmd/agentflow@latest
 ```
 
 ### Install the CLI Agent skills
