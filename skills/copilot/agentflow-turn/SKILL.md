@@ -21,7 +21,7 @@ git pull --rebase
 
 ### 2. Orient yourself
 
-If `handoffs/` contains files, read the latest one before anything else.
+Read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
 
 ### 3. Read the exchange folder
 

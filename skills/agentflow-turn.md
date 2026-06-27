@@ -14,7 +14,7 @@ Pull latest changes from origin first:
 git pull --rebase
 ```
 
-Then orient yourself quickly: if `handoffs/` contains files, read the latest one before anything else.
+Then orient yourself: read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
 
 Then read these files in order:
 
@@ -124,6 +124,8 @@ Then update STATUS.md and state.json with `current_turn: web` and stop. The Web 
    ## Open questions
    <if any, otherwise "none">
    ```
+
+   Also copy the same content to `.claude/handoffs/LATEST.md` in the project root — Claude Code auto-injects this file as context at session start.
 
 5. Commit and push:
    ```bash

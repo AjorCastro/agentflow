@@ -23,7 +23,7 @@ Before acting, check what already exists in `discovery/`, `plans/`, `tasks/`, an
 
 ### Orient yourself
 
-If `handoffs/` contains files, read the latest one before anything else.
+Read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
 
 ### Read exchange folder
 
