@@ -49,18 +49,43 @@ go install github.com/agentflow/agentflow/cmd/agentflow@latest
 ### Install the CLI Agent skills
 
 The `skills/` directory contains prompt files for Claude Code (or any compatible CLI agent).
-Install them globally so they are available in any project:
+They are embedded in the binary — install them with:
 
 ```bash
-cp skills/* ~/.claude/commands/
+agentflow install-skills
 ```
 
-Available skills:
+This writes the skills to `~/.claude/commands/`, making them available in any project.
+
+You can also install to a custom directory:
+
+```bash
+agentflow install-skills --target /path/to/.claude/commands
+```
+
+#### Global skills (available in any project)
+
+These skills are installed by `agentflow install-skills` and are used before a workspace exists:
 
 | Skill | When to use |
 |---|---|
 | `/agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
 | `/agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
+
+#### Project skills (installed per worktree)
+
+These skills are copied into `.claude/commands/` inside the worktree by `agentflow init`.
+They are used by the CLI Agent during feature work:
+
+| Skill | When to use |
+|---|---|
+| `/agentflow-start` | First CLI turn: run discovery, write results, hand off to Web Reviewer |
+| `/agentflow-plan`  | After discovery is approved: create implementation plan, hand off |
+| `/agentflow-implement` | After plan is approved: execute implementation, write results |
+| `/agentflow-decision` | When ambiguity or risk is found: create decision request, stop |
+| `/agentflow-handoff` | At the end of any turn: update STATUS.md, state.json, commit and push |
+
+> Project skills are coming soon.
 
 ---
 
@@ -188,8 +213,9 @@ agentflow/
     templates.go                 — file content generators
     validate.go                  — structure validation, path helpers
   skills/
-    agentflow-setup.md           — /agentflow-setup skill for CLI Agent
-    agentflow-init.md            — /agentflow-init skill for CLI Agent
+    agentflow-setup.md           — /agentflow-setup global skill (new project setup)
+    agentflow-init.md            — /agentflow-init global skill (workspace init)
+    embed.go                     — embeds skills into the binary
   docs/
     DECISIONS.md                 — design decisions log
     WEB-AGENT-ROLE.md            — full Web Reviewer instructions (reference copy)
