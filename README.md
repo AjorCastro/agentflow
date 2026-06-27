@@ -90,10 +90,10 @@ agentflow init \
 
 ```
 .agentflow/features/my-feature/
-  README.md       — protocol explanation and role definitions
-  STATUS.md       — current phase, turn, status, next action
-  CONFIG.md       — feature metadata and policies
-  state.json      — machine-readable state
+  README.md                    — protocol explanation and role definitions
+  STATUS.md                    — current phase, turn, status, next action
+  CONFIG.md                    — feature metadata and policies
+  state.json                   — machine-readable state
   specs/
   discovery/
   plans/
@@ -102,25 +102,28 @@ agentflow init \
   reviews/
   handoffs/
   prompts/
+    web-agent-role.md          — instructions for the Web Reviewer agent
 ```
 
 ---
 
 ## Full flow
 
-1. **Human + Web Reviewer** agree on feature scope, branch name, worktree path.
+1. **Human** describes what they want to build to the **Web Reviewer**.
 
-2. **Human** runs `agentflow init` (see above).
+2. **Web Reviewer** reads `docs/WEB-AGENT-ROLE.md`, asks clarifying questions, proposes branch name and worktree path, and creates `agentflow-init.md` in the repo root on `develop`.
 
-3. **Human** opens the worktree in the CLI agent (Claude Code, etc.) and asks it to run the initial AgentFlow skill.
+3. **Human** asks the **CLI Agent** to run `/agentflow-init`. The CLI Agent reads `agentflow-init.md` and runs `agentflow init` with the parameters defined by the Web Reviewer.
 
-4. **CLI Agent** reads `STATUS.md` and `CONFIG.md`, executes discovery, writes results to `discovery/`, updates `STATUS.md` and `state.json`, hands off.
+4. **CLI Agent** commits and pushes. The exchange folder is now live on the feature branch, including `prompts/web-agent-role.md` with instructions for the Web Reviewer.
 
-5. **Web Reviewer / Human** reviews discovery output, approves or redirects.
+5. **Web Reviewer** reads the exchange folder on GitHub and begins the discovery phase.
 
-6. Repeat for planning, implementation, review, etc.
+6. **CLI Agent** executes tasks, writes results to the exchange folder, updates `STATUS.md` and `state.json`, commits and pushes.
 
-7. After merge to develop, **Human** runs `agentflow close` to clean up.
+7. **Web Reviewer / Human** reviews, approves or redirects. Repeat for each phase.
+
+8. After merge to develop, **Human** runs `agentflow close` to clean up.
 
 ---
 
@@ -170,4 +173,5 @@ agentflow/
     validate.go                  — structure validation, path helpers
   docs/
     DECISIONS.md                 — design decisions log
+    WEB-AGENT-ROLE.md            — full Web Reviewer instructions (reference copy)
 ```
