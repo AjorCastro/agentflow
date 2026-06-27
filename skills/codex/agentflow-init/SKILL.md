@@ -7,11 +7,12 @@ description: Reads agentflow-init.md created by the Web Reviewer and initializes
 
 ## Core Workflow
 
-1. Find and parse `agentflow-init.md` in the repository root.
-2. Verify the current branch is the root branch.
-3. Run `agentflow init` if the workspace does not already exist.
-4. Verify the result with `agentflow status`.
-5. Remove `agentflow-init.md` and push.
+1. Pull latest changes from origin.
+2. Find and parse `agentflow-init.md` in the repository root.
+3. Verify the current branch is the root branch.
+4. Remove `agentflow-init.md` from root branch BEFORE init.
+5. Run `agentflow init` if the workspace does not already exist.
+6. Verify the result with `agentflow status`.
 
 ## Idempotency
 
@@ -19,16 +20,29 @@ Check each step before executing. Skip steps that are already complete. If the w
 
 ## Step Detail
 
+### Pull
+
+The Web Reviewer created `agentflow-init.md` on GitHub. Pull first:
+```
+git pull
+```
+
 ### Parse agentflow-init.md
 
 Look for `agentflow-init.md` in the current directory.
-- Not found → stop: "agentflow-init.md not found. Ask the Web Reviewer to create it first."
+- Not found after pull → stop: "agentflow-init.md not found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
 - Found → extract: `title`, `branch`, `worktree`, `root` (default: `develop`).
 
 ### Verify branch
 
 Run `git rev-parse --abbrev-ref HEAD`.
 - Not on root branch → stop and tell the user which branch is current.
+
+### Remove agentflow-init.md from root branch BEFORE init
+
+Critical: remove the file from `develop` before creating the worktree so it is not inherited by the new feature branch.
+- Exists → `git rm agentflow-init.md && git commit -m "chore: consume agentflow-init.md" && git push`
+- Already removed → skip.
 
 ### Initialize workspace
 
@@ -50,17 +64,6 @@ Run `agentflow status`. Confirm:
 - `phase: intake`
 - `turn: human`
 
-### Remove agentflow-init.md
-
-Check if the file still exists.
-- Exists → remove and commit:
-  ```
-  git rm agentflow-init.md
-  git -C <worktree> add -A
-  git -C <worktree> commit -m "chore: remove agentflow-init.md after workspace setup"
-  git -C <worktree> push
-  ```
-- Already removed → skip.
 
 ## Constraints
 

@@ -13,12 +13,19 @@ Before executing any step, check if it was already done. Skip completed steps si
 
 ## Procedure
 
-### 1. Find and read agentflow-init.md
+### 1. Pull latest changes
+
+The Web Reviewer created `agentflow-init.md` on GitHub. Pull it first:
+```
+git pull
+```
+
+### 2. Find and read agentflow-init.md
 
 Look for `agentflow-init.md` in the repository root.
 
-If it does not exist, stop and tell the user:
-> "agentflow-init.md not found. Ask the Web Reviewer to create it first."
+If it does not exist after pulling, stop and tell the user:
+> "agentflow-init.md not found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
 
 Extract these parameters:
 - `title`
@@ -26,15 +33,28 @@ Extract these parameters:
 - `worktree`
 - `root` (default: `develop` if not specified)
 
-### 2. Verify current branch
+### 3. Verify current branch
 
 Run `git rev-parse --abbrev-ref HEAD`.
 If you are not on the root branch, stop and tell the user.
 
-### 3. Initialize the workspace
+### 4. Remove agentflow-init.md from root branch BEFORE init
+
+Critical: remove the file from `develop` before creating the worktree so it is not inherited by the new feature branch.
+
+Check if `agentflow-init.md` still exists:
+- If yes → remove and commit on the root branch:
+  ```
+  git rm agentflow-init.md
+  git commit -m "chore: consume agentflow-init.md"
+  git push
+  ```
+- If already removed → skip.
+
+### 5. Initialize the workspace
 
 Run `agentflow status` to check if a workspace for this branch already exists.
-- If it exists → skip to step 4.
+- If it exists → skip to step 6.
 - If not → run:
 
 ```
@@ -47,29 +67,17 @@ agentflow init \
 
 The `--push` flag is enabled by default. If there is no remote, `agentflow init` will fail with a clear message — tell the user to add a remote first.
 
-### 4. Verify the result
+### 6. Verify the result
 
 Run `agentflow status` and confirm:
 - Exchange folder exists
 - `phase` is `intake`
 - `turn` is `human`
 
-### 5. Remove agentflow-init.md
-
-Check if `agentflow-init.md` still exists.
-- If yes → remove and commit:
-  ```
-  git rm agentflow-init.md
-  git -C <worktree> add -A
-  git -C <worktree> commit -m "chore: remove agentflow-init.md after workspace setup"
-  git -C <worktree> push
-  ```
-- If already removed → skip.
-
 ## Success criteria
 
 - `agentflow status` shows the exchange folder with `phase: intake`, `turn: human`
-- `agentflow-init.md` no longer exists in the repo root
+- `agentflow-init.md` no longer exists on `develop`
 - Branch and worktree are pushed to GitHub
 
 ## Next step
