@@ -19,7 +19,11 @@ Before executing any step, check what already exists in `discovery/`, `plans/`, 
 git pull --rebase
 ```
 
-### 2. Read the exchange folder
+### 2. Orient yourself
+
+If `handoffs/` contains files, read the latest one before anything else.
+
+### 3. Read the exchange folder
 
 Find the exchange folder: `.agentflow/features/*/`
 
@@ -34,7 +38,7 @@ If `current_turn` is not `cli`, stop and tell the user:
 If there are unresolved files in `decisions/`, stop and tell the user:
 > "There is an unresolved decision request. Please resolve it before asking me to continue."
 
-### 3. Read all relevant context
+### 4. Read all relevant context
 
 Depending on the current phase, read:
 - `specs/` — requirements
@@ -80,14 +84,34 @@ Update STATUS.md with `current_turn: web` and stop. The Web Reviewer will read t
 
 1. Write a result file at `tasks/task-<YYYY-MM-DD>-<short-slug>.md` summarizing what you did.
 
-2. Update `STATUS.md`:
+2. Write a handoff note at `handoffs/handoff-<YYYY-MM-DD>-copilot-cli.md`:
+   ```markdown
+   # Handoff — <phase> — <date>
+
+   ## Agent
+   Copilot CLI
+
+   ## What was done
+   <summary of this turn>
+
+   ## Files created or modified
+   <list>
+
+   ## Next step for the CLI Agent
+   <exact next action when the turn returns to cli>
+
+   ## Open questions
+   <if any, otherwise "none">
+   ```
+
+3. Update `STATUS.md`:
    - `current_turn: web`
    - `next_action`: what the Web Reviewer should do
    - `last_update`: current timestamp
 
-3. Update `state.json` with the same values.
+4. Update `state.json` with the same values.
 
-4. Commit and push:
+5. Commit and push:
    ```
    git add -A
    git commit -m "cli: <short description>"

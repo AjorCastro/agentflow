@@ -21,6 +21,10 @@ Before acting, check what already exists in `discovery/`, `plans/`, `tasks/`, an
 
 ## Step Detail
 
+### Orient yourself
+
+If `handoffs/` contains files, read the latest one before anything else.
+
 ### Read exchange folder
 
 Find: `.agentflow/features/*/`
@@ -83,6 +87,29 @@ Create `tasks/task-<YYYY-MM-DD>-<slug>.md` summarizing:
 - What was done
 - Files created or modified
 - Open questions if any
+
+### Write handoff note
+
+Create `handoffs/handoff-<YYYY-MM-DD>-codex-cli.md`:
+
+```markdown
+# Handoff — <phase> — <date>
+
+## Agent
+Codex CLI
+
+## What was done
+<summary of this turn>
+
+## Files created or modified
+<list>
+
+## Next step for the CLI Agent
+<exact next action when the turn returns to cli>
+
+## Open questions
+<if any, otherwise "none">
+```
 
 ### Update STATUS.md and state.json
 

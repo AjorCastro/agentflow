@@ -14,6 +14,8 @@ Pull latest changes from origin first:
 git pull --rebase
 ```
 
+Then orient yourself quickly: if `handoffs/` contains files, read the latest one before anything else.
+
 Then read these files in order:
 
 1. `.agentflow/features/*/CONFIG.md` — understand the feature, scope, and policies
@@ -99,14 +101,38 @@ Then update STATUS.md and state.json with `current_turn: web` and stop. The Web 
 
 3. Update `state.json` with the same values.
 
-4. Commit and push:
+4. Write a handoff note at:
+   ```
+   handoffs/handoff-<YYYY-MM-DD>-claude-code.md
+   ```
+   With this content:
+   ```markdown
+   # Handoff — <phase> — <date>
+
+   ## Agent
+   Claude Code
+
+   ## What was done
+   <summary of this turn>
+
+   ## Files created or modified
+   <list>
+
+   ## Next step for the CLI Agent
+   <exact next action when the turn returns to cli>
+
+   ## Open questions
+   <if any, otherwise "none">
+   ```
+
+5. Commit and push:
    ```bash
    git add -A
    git commit -m "cli: <short description of what was done>"
    git push
    ```
 
-5. Tell the Human:
+6. Tell the Human:
    > "Done. The Web Reviewer can now review [what you did] on branch [branch name]."
 
 ## Stop
