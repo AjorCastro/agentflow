@@ -13,6 +13,7 @@ to coordinate work between a Human, a Web Reviewer, and a CLI Coding Agent.`,
 	root.AddCommand(newInitCmd())
 	root.AddCommand(newStatusCmd())
 	root.AddCommand(newValidateCmd())
+	root.AddCommand(newCloseCmd())
 
 	return root
 }
