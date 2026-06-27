@@ -1,0 +1,18 @@
+{
+  "protocol": "agentflow",
+  "version": "0.1",
+  "feature_id": "feature-test-init",
+  "title": "Test init local",
+  "root_branch": "develop",
+  "feature_branch": "feature/test-init",
+  "worktree": "/home/ajc/projects/agentflow/.worktrees/test-init",
+  "exchange_folder": "/home/ajc/projects/agentflow/.worktrees/test-init/.agentflow/features/feature-test-init",
+  "current_phase": "intake",
+  "current_turn": "human",
+  "status": "initialized",
+  "attention_required": true,
+  "last_result": null,
+  "next_action": "run_initial_cli_skill",
+  "created_at": "2026-06-27T20:01:11Z",
+  "updated_at": "2026-06-27T20:01:11Z"
+}
