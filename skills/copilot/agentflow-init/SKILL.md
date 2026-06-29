@@ -20,12 +20,14 @@ The Web Reviewer created `agentflow-init.md` on GitHub. Pull it first:
 git pull --rebase
 ```
 
-### 2. Find and read agentflow-init.md
+### 2. Find and read the agentflow-init file
 
-Look for `agentflow-init.md` in the repository root.
+Look for `agentflow-init-*.md` files in the repository root.
 
-If it does not exist after pulling, stop and tell the user:
-> "agentflow-init.md not found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
+- If no file is found after pulling, stop and tell the user:
+  > "No agentflow-init-*.md file found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
+- If exactly one file is found, use it.
+- If multiple files are found, list them and ask the user which feature to initialize.
 
 Extract these parameters:
 - `title`
@@ -42,11 +44,13 @@ If you are not on the root branch, stop and tell the user.
 
 Critical: remove the file from `develop` before creating the worktree so it is not inherited by the new feature branch.
 
-Check if `agentflow-init.md` still exists:
+Let `<init-file>` be the filename found in step 2.
+
+Check if it still exists:
 - If yes → remove and commit on the root branch:
   ```
-  git rm agentflow-init.md
-  git commit -m "chore: consume agentflow-init.md"
+  git rm <init-file>
+  git commit -m "chore: consume <init-file>"
   git push
   ```
 - If already removed → skip.
@@ -77,7 +81,7 @@ Run `agentflow status` and confirm:
 ## Success criteria
 
 - `agentflow status` shows the exchange folder with `phase: intake`, `turn: web`
-- `agentflow-init.md` no longer exists on `develop`
+- The `agentflow-init-*.md` file no longer exists on `develop`
 - Branch and worktree are pushed to GitHub
 
 ## Next step

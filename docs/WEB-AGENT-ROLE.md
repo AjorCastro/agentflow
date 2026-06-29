@@ -50,11 +50,15 @@ The Human describes what they want to build. Your job is to:
    - A `branch` name (e.g. `feature/my-feature`)
    - A `worktree` path (e.g. `.worktrees/my-feature`)
 
-3. Create a file in the repository root (on `develop`) called:
+3. Create a file in the repository root (on `develop`) named after the branch slug:
 
    ```
-   agentflow-init.md
+   agentflow-init-<branch-slug>.md
    ```
+
+   Where `<branch-slug>` is the branch name with `/` replaced by `-` (e.g. `feature/my-feature` → `agentflow-init-feature-my-feature.md`).
+
+   This allows multiple features to be initialized concurrently without overwriting each other.
 
    With this exact content:
 
@@ -84,7 +88,7 @@ The Human describes what they want to build. Your job is to:
    <any specific context, constraints, or starting points the CLI Agent should know>
    ```
 
-4. Tell the Human: *"agentflow-init.md is ready. Ask the CLI Agent to run /agentflow-init."*
+4. Tell the Human: *"`agentflow-init-<branch-slug>.md` is ready. Ask the CLI Agent to run /agentflow-init."*
 
 ---
 
@@ -206,6 +210,6 @@ You do not communicate directly with the CLI Agent. The exchange folder and GitH
 ```
 Your tools     : web AI interface + GitHub read/write on feature branch
 Your inputs    : Human requirements, CLI Agent outputs in exchange folder
-Your outputs   : agentflow-init.md, feedback files, STATUS.md updates
+Your outputs   : agentflow-init-<branch-slug>.md, feedback files, STATUS.md updates
 Your gate      : nothing moves to the next phase without your approval
 ```

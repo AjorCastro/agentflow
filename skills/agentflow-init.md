@@ -16,12 +16,14 @@ The Web Reviewer created `agentflow-init.md` directly on GitHub. Pull to get it 
 git pull --rebase
 ```
 
-### 2. Find and read agentflow-init.md
+### 2. Find and read the agentflow-init file
 
-Look for `agentflow-init.md` in the repository root (current directory, on the root branch).
+Look for `agentflow-init-*.md` files in the repository root (current directory, on the root branch).
 
-If the file does not exist after pulling, stop and tell the Human:
-> "agentflow-init.md not found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
+- If no file is found after pulling, stop and tell the Human:
+  > "No agentflow-init-*.md file found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
+- If exactly one file is found, use it.
+- If multiple files are found, list them and ask the Human which feature to initialize.
 
 Read the file and extract these parameters:
 - `title`
@@ -38,15 +40,17 @@ git rev-parse --abbrev-ref HEAD
 
 If you are not on the root branch (usually `develop`), stop and tell the Human which branch you are on.
 
-### 4. Remove agentflow-init.md from the root branch BEFORE init
+### 4. Remove the agentflow-init file from the root branch BEFORE init
 
-This is critical: `agentflow-init.md` must be removed from `develop` before the worktree is created, otherwise the file will be inherited by the new feature branch.
+This is critical: the init file must be removed from `develop` before the worktree is created, otherwise the file will be inherited by the new feature branch.
 
-Check if `agentflow-init.md` still exists:
+Let `<init-file>` be the filename found in step 2.
+
+Check if it still exists:
 - If it exists → remove and commit on the root branch:
   ```bash
-  git rm agentflow-init.md
-  git commit -m "chore: consume agentflow-init.md"
+  git rm <init-file>
+  git commit -m "chore: consume <init-file>"
   git push
   ```
 - If it was already removed → skip.
