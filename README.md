@@ -64,7 +64,7 @@ Share the GitHub repository URL with your Web Reviewer (ChatGPT, Claude.ai, Gemi
 
 ### Step 4 — Initialize a feature
 
-The Web Reviewer will ask clarifying questions, propose the branch/worktree names, and create `agentflow-init.md` in the repo root. Then ask your CLI Agent to run:
+The Web Reviewer will ask clarifying questions, propose the branch/worktree names, and create `agentflow-init-<branch-slug>.md` in the repo root (e.g. `agentflow-init-feature-my-feature.md`). Then ask your CLI Agent to run:
 
 ```
 /agentflow-init
@@ -131,7 +131,7 @@ agentflow install-skills --agent codex
 | Skill | When to use |
 |---|---|
 | `agentflow-setup` | Set up a brand new project: git init, create `docs/WEB-AGENT-ROLE.md`, push to GitHub |
-| `agentflow-init`  | After the Web Reviewer creates `agentflow-init.md`: run `agentflow init` and push |
+| `agentflow-init`  | After the Web Reviewer creates `agentflow-init-<branch>.md`: run `agentflow init` and push |
 | `agentflow-turn`  | Any CLI Agent turn: read STATUS.md, act on current phase, commit and push |
 | `agentflow-close` | After merge: remove worktree and delete branch |
 
@@ -201,9 +201,9 @@ agentflow init \
 
 1. **Human** describes what they want to build to the **Web Reviewer**.
 
-2. **Web Reviewer** reads `docs/WEB-AGENT-ROLE.md`, asks clarifying questions, proposes branch name and worktree path, and creates `agentflow-init.md` in the repo root on `develop`.
+2. **Web Reviewer** reads `docs/WEB-AGENT-ROLE.md`, asks clarifying questions, proposes branch name and worktree path, and creates `agentflow-init-<branch-slug>.md` in the repo root on `develop` (e.g. `agentflow-init-feature-my-feature.md`). Using a branch-specific filename allows multiple features to be initialized concurrently without collision.
 
-3. **Human** asks the **CLI Agent** to run `/agentflow-init`. The CLI Agent reads `agentflow-init.md` and runs `agentflow init` with the parameters defined by the Web Reviewer.
+3. **Human** asks the **CLI Agent** to run `/agentflow-init`. The CLI Agent finds the `agentflow-init-*.md` file and runs `agentflow init` with the parameters defined by the Web Reviewer.
 
 4. **CLI Agent** commits and pushes. The exchange folder is now live on the feature branch, including `prompts/web-agent-role.md` with instructions for the Web Reviewer.
 
