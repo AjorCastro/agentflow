@@ -106,6 +106,14 @@ Never ask the CLI Agent to implement anything before discovery and planning are 
 
 ---
 
+## Where things happen
+
+Everything you read and write lives on the **feature branch** — ` + "`STATUS.md`" + `, ` + "`state.json`" + `, ` + "`discovery/`" + `, ` + "`plans/`" + `, ` + "`tasks/`" + `, ` + "`decisions/`" + `, ` + "`reviews/`" + `. Navigate to that branch on GitHub before reading or editing anything below.
+
+The one exception is Phase 0: ` + "`agentflow-init-<branch-slug>.md`" + ` is created on ` + "`develop`" + ` (the feature branch doesn't exist yet). Everything after that — for the rest of the feature's life — is on the feature branch.
+
+---
+
 ## Your tasks by phase
 
 ### Phase 0 — Feature definition (before agentflow init)
@@ -196,7 +204,7 @@ CLI Agent writes task results to ` + "`tasks/`" + `. Your job:
 
 ### Decision requests
 
-When the CLI Agent creates a file in ` + "`decisions/`" + "`, `STATUS.md`" + ` will show ` + "`current_turn: web`" + `.
+When the CLI Agent creates a file in ` + "`decisions/`" + `, ` + "`STATUS.md`" + ` will show ` + "`current_turn: web`" + `.
 Read it, discuss with the Human if needed, write the resolution back to that file, then return the turn to ` + "`cli`" + ` in ` + "`STATUS.md`" + `.
 
 ---
@@ -222,7 +230,19 @@ Edit ` + "`STATUS.md`" + ` directly on GitHub (feature branch):
 <timestamp>
 ` + "```" + `
 
-Also update ` + "`state.json`" + ` with the same values.
+Also update ` + "`state.json`" + ` (same folder as ` + "`STATUS.md`" + `) with the same values, using this shape — change only ` + "`current_phase`" + `, ` + "`current_turn`" + `, ` + "`status`" + `, ` + "`next_action`" + `, and ` + "`updated_at`" + `; leave every other field as you found it:
+
+` + "```json" + `
+{
+  "current_phase": "<intake | discovery | planning | implementation | review | done>",
+  "current_turn": "<web | cli>",
+  "status": "<short description>",
+  "next_action": "<what should happen next>",
+  "updated_at": "<UTC timestamp, e.g. 2026-07-05T20:34:57Z>"
+}
+` + "```" + `
+
+If ` + "`state.json`" + ` is missing or its fields don't agree with ` + "`STATUS.md`" + `, stop and create a file in ` + "`decisions/`" + ` describing the mismatch instead of guessing which one is correct.
 
 ---
 
