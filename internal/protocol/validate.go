@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // RequiredDirs lists subdirectories that must exist under an exchange folder.
@@ -65,8 +66,14 @@ func FindExchangeFolders(root string) ([]string, error) {
 	return dirs, nil
 }
 
-// FeatureIDFromBranch converts a branch name to a feature ID by replacing '/' with '-'.
+// FeatureIDFromBranch converts a branch name to a feature ID for use under
+// .agentflow/features/<feature-id>. A leading "feature/" prefix is dropped
+// before conversion, since the "features" directory already conveys that —
+// keeping it would produce a redundant ".../features/feature-<name>" path.
+// Any other remaining '/' is replaced with '-'.
 func FeatureIDFromBranch(branch string) string {
+	branch = strings.TrimPrefix(branch, "feature/")
+
 	result := make([]byte, len(branch))
 	for i := range branch {
 		if branch[i] == '/' {

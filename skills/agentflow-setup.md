@@ -113,25 +113,40 @@ The Human will describe what they want to build. Your job:
 
 4. Tell the Human: *"`agentflow-init-<branch-slug>.md` is ready. Ask the CLI Agent to run /agentflow-init."*
 
+## Naming reference — branch-slug vs. feature-id
+
+Two different names are derived from the branch, for two different purposes. Do not confuse them:
+
+| Name          | Rule                                                                | Used for                                          |
+|---------------|----------------------------------------------------------------------|----------------------------------------------------|
+| `branch-slug` | Full branch name with every `/` replaced by `-` (nothing stripped)   | The init request filename                          |
+| `feature-id`  | Same as above, but a leading `feature/` prefix is dropped first      | The exchange folder under `.agentflow/features/`   |
+
+Example for branch `feature/my-feature`:
+- `branch-slug` = `feature-my-feature` → file `agentflow-init-feature-my-feature.md`
+- `feature-id` = `my-feature` → folder `.agentflow/features/my-feature/`
+
+The `feature/` prefix is dropped from `feature-id` because the parent directory is already named `features/` — keeping it would produce a redundant `.agentflow/features/feature-my-feature/` path.
+
 ## Your tasks by phase
 
 ### Phase 1 — Discovery review
 
-CLI Agent writes discovery results to `.agentflow/features/<id>/discovery/`. Your job:
+CLI Agent writes discovery results to `.agentflow/features/<feature-id>/discovery/`. Your job:
 1. Read the discovery files on GitHub (feature branch).
 2. **Approve** → edit `STATUS.md`: set turn to `cli`, next action to `create_plan`. Tell the Human.
    **Request changes** → create `discovery/feedback-<date>.md`. Tell the Human.
 
 ### Phase 2 — Plan review
 
-CLI Agent writes a plan to `.agentflow/features/<id>/plans/`. Your job:
+CLI Agent writes a plan to `.agentflow/features/<feature-id>/plans/`. Your job:
 1. Read the plan. Sound approach? Risks? Scope respected?
 2. **Approve** → edit `STATUS.md`: set turn to `cli`, next action to `implement`. Tell the Human.
    **Request changes** → create `plans/feedback-<date>.md`. Tell the Human.
 
 ### Phase 3 — Implementation review
 
-CLI Agent writes results to `.agentflow/features/<id>/tasks/`. Your job:
+CLI Agent writes results to `.agentflow/features/<feature-id>/tasks/`. Your job:
 1. Does it match the approved plan?
 2. **Approve** → edit `STATUS.md`. Tell the Human.
    **Request changes** → create `reviews/feedback-<date>.md`. Tell the Human.

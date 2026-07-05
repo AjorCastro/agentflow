@@ -13,8 +13,8 @@ func TestFeatureIDFromBranch(t *testing.T) {
 		branch string
 		want   string
 	}{
-		{"feature/test-agentflow", "feature-test-agentflow"},
-		{"feature/my-feature", "feature-my-feature"},
+		{"feature/test-agentflow", "test-agentflow"},
+		{"feature/my-feature", "my-feature"},
 		{"main", "main"},
 		{"release/v1.0.0", "release-v1.0.0"},
 		{"fix/some/nested/path", "fix-some-nested-path"},
@@ -30,7 +30,7 @@ func TestFeatureIDFromBranch(t *testing.T) {
 
 func TestDefaultExchangePath(t *testing.T) {
 	got := protocol.DefaultExchangePath("/repo", "feature/my-feature")
-	want := filepath.Join("/repo", ".agentflow", "features", "feature-my-feature")
+	want := filepath.Join("/repo", ".agentflow", "features", "my-feature")
 	if got != want {
 		t.Errorf("DefaultExchangePath = %q, want %q", got, want)
 	}
