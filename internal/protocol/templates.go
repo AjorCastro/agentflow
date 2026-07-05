@@ -268,7 +268,9 @@ Also update ` + "`state.json`" + ` (same folder as ` + "`STATUS.md`" + `) with t
 }
 ` + "```" + `
 
-If ` + "`state.json`" + ` is missing or its fields don't agree with ` + "`STATUS.md`" + `, stop and create a file in ` + "`decisions/`" + ` describing the mismatch instead of guessing which one is correct.
+` + "`current_phase`" + ` and ` + "`current_turn`" + ` use the exact same words in both files (` + "`intake`" + `, ` + "`web`" + `, etc.) — those two must match **literally**. ` + "`status`" + ` and ` + "`next_action`" + ` do not: ` + "`STATUS.md`" + ` holds a human-readable sentence (e.g. ` + "`Initialized.`" + `, ` + "`Read the exchange folder and begin Phase 1 — Discovery.`" + `) while ` + "`state.json`" + ` holds a short machine slug for the same fact (e.g. ` + "`initialized`" + `, ` + "`begin_discovery`" + `) — this is intentional, not a bug, so judge those two by meaning, never by exact text.
+
+If ` + "`state.json`" + ` is missing, or ` + "`current_phase`" + `/` + "`current_turn`" + ` don't match literally, or ` + "`status`" + `/` + "`next_action`" + ` contradict each other in meaning (not just wording), stop and create a file in ` + "`decisions/`" + ` describing the mismatch instead of guessing which one is correct.
 
 ---
 
