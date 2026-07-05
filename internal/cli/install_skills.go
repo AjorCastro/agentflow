@@ -71,7 +71,7 @@ func installClaudeSkills() error {
 	fmt.Printf("\n%d skill(s) installed in %s\n", installed, target)
 	fmt.Println("\nAvailable in Claude Code:")
 	fmt.Println("  /agentflow-setup   — set up a new project and push to GitHub")
-	fmt.Println("  /agentflow-init    — initialize workspace from agentflow-init.md")
+	fmt.Println("  /agentflow-init    — initialize workspace from agentflow-init-*.md")
 	fmt.Println("  /agentflow-turn    — execute the CLI Agent's turn")
 	fmt.Println("  /agentflow-close   — clean up after merge")
 	return nil
@@ -145,7 +145,7 @@ func installSkillFolders(srcDir, target, agentLabel, hint string) error {
 	fmt.Print(msg)
 	fmt.Printf("\nAvailable in %s:\n", agentLabel)
 	fmt.Println("  agentflow-setup   — set up a new project and push to GitHub")
-	fmt.Println("  agentflow-init    — initialize workspace from agentflow-init.md")
+	fmt.Println("  agentflow-init    — initialize workspace from agentflow-init-*.md")
 	fmt.Println("  agentflow-turn    — execute the CLI Agent's turn")
 	fmt.Println("  agentflow-close   — clean up after merge")
 	return nil

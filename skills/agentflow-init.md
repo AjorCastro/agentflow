@@ -1,6 +1,6 @@
 # AgentFlow Init
 
-Read the `agentflow-init.md` file created by the Web Reviewer and initialize the AgentFlow workspace.
+Read the `agentflow-init-<branch-slug>.md` file created by the Web Reviewer and initialize the AgentFlow workspace.
 
 ## Idempotency
 
@@ -10,7 +10,7 @@ Before executing any step, check if it was already done. Skip completed steps si
 
 ### 1. Pull latest changes from origin
 
-The Web Reviewer created `agentflow-init.md` directly on GitHub. Pull to get it locally:
+The Web Reviewer created `agentflow-init-<branch-slug>.md` directly on GitHub. Pull to get it locally:
 
 ```bash
 git pull --rebase
@@ -85,7 +85,7 @@ Confirm that:
 - The exchange folder was created
 - `phase` is `intake`
 - `turn` is `web`
-- `next_action` is `run_initial_cli_skill`
+- `next_action` is `begin_discovery`
 
 ### 7. Print summary
 

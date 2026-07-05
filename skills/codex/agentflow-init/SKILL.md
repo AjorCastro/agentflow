@@ -1,6 +1,6 @@
 ---
 name: agentflow-init
-description: Reads agentflow-init.md created by the Web Reviewer and initializes the AgentFlow workspace on a new feature branch with worktree and exchange folder. Use when the user says the Web Reviewer has created agentflow-init.md, or asks to initialize a feature, create a worktree, or run agentflow init. Trigger phrases include "the web reviewer created agentflow-init.md", "initialize the workspace", "run agentflow init", "create the feature branch".
+description: Reads agentflow-init-<branch-slug>.md created by the Web Reviewer and initializes the AgentFlow workspace on a new feature branch with worktree and exchange folder. Use when the user says the Web Reviewer has created agentflow-init-<branch-slug>.md, or asks to initialize a feature, create a worktree, or run agentflow init. Trigger phrases include "the web reviewer created agentflow-init-<branch-slug>.md", "initialize the workspace", "run agentflow init", "create the feature branch".
 ---
 
 # AgentFlow Init
@@ -8,9 +8,9 @@ description: Reads agentflow-init.md created by the Web Reviewer and initializes
 ## Core Workflow
 
 1. Pull latest changes from origin.
-2. Find and parse `agentflow-init.md` in the repository root.
+2. Find and parse `agentflow-init-<branch-slug>.md` in the repository root.
 3. Verify the current branch is the root branch.
-4. Remove `agentflow-init.md` from root branch BEFORE init.
+4. Remove `agentflow-init-<branch-slug>.md` from root branch BEFORE init.
 5. Run `agentflow init` if the workspace does not already exist.
 6. Verify the result with `agentflow status`.
 
@@ -22,7 +22,7 @@ Check each step before executing. Skip steps that are already complete. If the w
 
 ### Pull
 
-The Web Reviewer created `agentflow-init.md` on GitHub. Pull first:
+The Web Reviewer created `agentflow-init-<branch-slug>.md` on GitHub. Pull first:
 ```
 git pull --rebase
 ```

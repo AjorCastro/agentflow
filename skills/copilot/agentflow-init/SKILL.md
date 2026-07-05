@@ -1,6 +1,6 @@
 ---
 name: agentflow-init
-description: Reads agentflow-init.md created by the Web Reviewer and initializes the AgentFlow workspace. Use this when the user says the Web Reviewer has created agentflow-init.md and asks you to initialize the workspace.
+description: Reads agentflow-init-<branch-slug>.md created by the Web Reviewer and initializes the AgentFlow workspace. Use this when the user says the Web Reviewer has created agentflow-init-<branch-slug>.md and asks you to initialize the workspace.
 ---
 
 ## Objective
@@ -15,7 +15,7 @@ Before executing any step, check if it was already done. Skip completed steps si
 
 ### 1. Pull latest changes
 
-The Web Reviewer created `agentflow-init.md` on GitHub. Pull it first:
+The Web Reviewer created `agentflow-init-<branch-slug>.md` on GitHub. Pull it first:
 ```
 git pull --rebase
 ```
@@ -40,7 +40,7 @@ Extract these parameters:
 Run `git rev-parse --abbrev-ref HEAD`.
 If you are not on the root branch, stop and tell the user.
 
-### 4. Remove agentflow-init.md from root branch BEFORE init
+### 4. Remove agentflow-init-<branch-slug>.md from root branch BEFORE init
 
 Critical: remove the file from `develop` before creating the worktree so it is not inherited by the new feature branch.
 

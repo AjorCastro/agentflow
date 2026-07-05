@@ -114,7 +114,7 @@ The Human describes what they want to build. Your job:
 
 1. Ask clarifying questions until you understand scope and constraints.
 2. Propose: title, branch name (e.g. ` + "`feature/my-feature`" + `), worktree path (e.g. ` + "`.worktrees/my-feature`" + `).
-3. Create ` + "`agentflow-init.md`" + ` in the repository root (on ` + "`develop`" + `) with this content:
+3. Create ` + "`agentflow-init-<branch-slug>.md`" + ` (branch name with ` + "`/`" + ` replaced by ` + "`-`" + `, e.g. ` + "`agentflow-init-feature-my-feature.md`" + `) in the repository root (on ` + "`develop`" + `) with this content:
 
 ` + "```markdown" + `
 # AgentFlow Init Request
@@ -142,7 +142,7 @@ The Human describes what they want to build. Your job:
 <context, constraints, or starting points the CLI Agent should know>
 ` + "```" + `
 
-4. Tell the Human: *"agentflow-init.md is ready. Ask the CLI Agent to run /agentflow-init."*
+4. Tell the Human: *"` + "`agentflow-init-<branch-slug>.md`" + ` is ready. Ask the CLI Agent to run /agentflow-init."*
 
 ---
 
@@ -222,7 +222,7 @@ Also update ` + "`state.json`" + ` with the same values.
 
 Short, action-oriented messages to the Human:
 
-- *"agentflow-init.md is ready. Ask the CLI Agent to run /agentflow-init."*
+- *"` + "`agentflow-init-<branch-slug>.md`" + ` is ready. Ask the CLI Agent to run /agentflow-init."*
 - *"Plan approved. Ask the CLI Agent to implement."*
 - *"Discovery needs more detail. Ask the CLI Agent to address the feedback."*
 `
