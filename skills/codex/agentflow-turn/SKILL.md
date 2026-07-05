@@ -7,25 +7,34 @@ description: Executes the CLI Agent's assigned turn in an AgentFlow workspace. U
 
 ## Core Workflow
 
-1. Read the exchange folder to understand the current state.
-2. Confirm `current_turn` is `cli`.
-3. Check for unresolved decision requests.
-4. Read all relevant context for the current phase.
-5. Do the work. Create a result file.
-6. Update STATUS.md and state.json.
-7. Commit and push.
+1. Pull latest changes from origin
+2. Orient yourself
+3. Read the exchange folder
+4. Read phase context
+5. Do the work
+6. If you find ambiguity or risk
+7. Write a result file
+8. Update STATUS.md and state.json
+9. Write a handoff note
+10. Commit and push
 
 ## Idempotency
 
-Before acting, check what already exists in `discovery/`, `plans/`, `tasks/`, and `decisions/`. If results already exist for the current phase, do not overwrite them. Report what you found and ask the user whether to continue or start a new task.
+Before executing any step, check what already exists in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.
 
 ## Step Detail
+
+### Pull latest changes from origin
+
+```bash
+git pull --rebase
+```
 
 ### Orient yourself
 
 Read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
 
-### Read exchange folder
+### Read the exchange folder
 
 Find: `.agentflow/features/*/`
 
@@ -34,64 +43,95 @@ Read in order:
 2. `STATUS.md` — current phase, turn, next action
 3. `state.json` — confirm `current_turn` is `cli`
 
-If `current_turn` is not `cli`:
-> Stop: "The current turn is not assigned to the CLI Agent. STATUS.md says: [value]."
+If `current_turn` is not `cli`, stop and tell the Human:
+> "The current turn is not assigned to the CLI Agent. STATUS.md says: [current_turn value]."
 
-If unresolved files exist in `decisions/`:
-> Stop: "There is an unresolved decision request. Please resolve it before asking me to continue."
+If there are files in `decisions/` that have not been resolved, stop and tell the Human:
+> "There is an unresolved decision request. Please resolve it before asking me to continue."
 
 ### Read phase context
 
-- `specs/` — requirements and scope
-- `discovery/` — codebase analysis
-- `plans/` — approved implementation plan
-- `tasks/` — previous results
-- `reviews/` — Web Reviewer feedback
+Read everything in the exchange folder that is relevant to the current phase:
+- `specs/` — feature specifications
+- `discovery/` — research and codebase analysis
+- `plans/` — implementation plans
+- `tasks/` — previous task results
+- `reviews/` — feedback from the Web Reviewer
 
 ### Do the work
 
-Act according to `STATUS.md` `next_action`. The exchange folder provides enough context to know what is expected.
+Act according to what `STATUS.md` says is the `next_action`. Use your judgment — the context in the exchange folder is enough to know what is expected.
 
-**Core policies — always apply:**
-- Do not implement anything before discovery and planning are approved by the Web Reviewer.
-- When you find ambiguity or risk, create a decision request instead of guessing.
+Core policies (from CONFIG.md — always apply):
+- Do not implement anything before discovery and planning have been approved by the Web Reviewer.
+- When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).
 - Write a result file at the end of every task.
 - Update STATUS.md and state.json at every handoff.
 
-### Decision requests
+### If you find ambiguity or risk
 
-When ambiguity or risk is found, create `decisions/decision-<YYYY-MM-DD>-<slug>.md`:
+Create a file at:
+```
+decisions/decision-<YYYY-MM-DD>-<short-slug>.md
+```
 
+With this content:
 ```markdown
 # Decision Request — <short title>
 
 ## Context
-<what you were doing>
+<what you were doing when you found the issue>
 
 ## Question
-<the specific question>
+<the specific question that needs resolution>
 
 ## Options
 - Option A: ...
 - Option B: ...
 
 ## Recommendation
-<your recommendation if any>
+<your recommendation if you have one>
 ```
 
-Update STATUS.md with `current_turn: web` and stop. The Web Reviewer will read the decision file, discuss with the Human if needed, and return the turn to `cli`.
+Then update STATUS.md and state.json with `current_turn: web` and stop. The Web Reviewer will read the decision file, discuss with the Human if needed, and return the turn to `cli`.
 
-### Write result file
+### Write a result file
 
-Create `tasks/task-<YYYY-MM-DD>-<slug>.md` summarizing:
-- What was done
-- Files created or modified
-- Open questions if any
+At the end of every task, write a result file at:
+```
+tasks/task-<YYYY-MM-DD>-<short-slug>.md
+```
+Summarizing what you did, what files you created or modified, and any open questions.
 
-### Write handoff note
+### Update STATUS.md and state.json
 
-Create `handoffs/handoff-<YYYY-MM-DD>-codex-cli.md`:
+Update `STATUS.md`:
+```markdown
+## Current phase
+<current or next phase>
 
+## Current turn
+web
+
+## Status
+<short description of what was completed>
+
+## Next action
+<what the Web Reviewer should do>
+
+## Last update
+<timestamp>
+```
+
+Update `state.json` with the same values (`current_phase`/`current_turn` must match `STATUS.md` literally; `status`/`next_action` are a machine-slug equivalent of the same fact, not a literal copy — see `docs/WEB-AGENT-ROLE.md` for the exact rule).
+
+### Write a handoff note
+
+Write a handoff note at:
+```
+handoffs/handoff-<YYYY-MM-DD>-codex-cli.md
+```
+With this content:
 ```markdown
 # Handoff — <phase> — <date>
 
@@ -111,19 +151,11 @@ Codex CLI
 <if any, otherwise "none">
 ```
 
-### Update STATUS.md and state.json
-
-```
-current_turn: web
-next_action: <what the Web Reviewer should do>
-last_update: <timestamp>
-```
-
 ### Commit and push
 
-```
+```bash
 git add -A
-git commit -m "cli: <short description>"
+git commit -m "cli: <short description of what was done>"
 git push
 ```
 
@@ -142,6 +174,6 @@ git push
 ## Next Step
 
 Tell the user:
-> "Done. The Web Reviewer can now review [what you did] on branch [branch]."
+> Done. The Web Reviewer can now review [what you did] on branch [branch name].
 
 Stop.

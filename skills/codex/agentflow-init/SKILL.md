@@ -7,68 +7,97 @@ description: Reads agentflow-init-<branch-slug>.md created by the Web Reviewer a
 
 ## Core Workflow
 
-1. Pull latest changes from origin.
-2. Find and parse `agentflow-init-<branch-slug>.md` in the repository root.
-3. Verify the current branch is the root branch.
-4. Remove `agentflow-init-<branch-slug>.md` from root branch BEFORE init.
-5. Run `agentflow init` if the workspace does not already exist.
-6. Verify the result with `agentflow status`.
+1. Pull latest changes from origin
+2. Find and read the agentflow-init file
+3. Verify you are on the root branch
+4. Remove the agentflow-init file from the root branch BEFORE init
+5. Run agentflow init
+6. Verify the result
 
 ## Idempotency
 
-Check each step before executing. Skip steps that are already complete. If the workspace already exists, skip init and verify the state.
+Before executing any step, check if it was already done. Skip completed steps silently and continue from where things left off. Never duplicate work or overwrite existing results. If everything is already done, say so and stop.
 
 ## Step Detail
 
-### Pull
+### Pull latest changes from origin
 
-The Web Reviewer created `agentflow-init-<branch-slug>.md` on GitHub. Pull first:
-```
+The Web Reviewer created `agentflow-init-<branch-slug>.md` directly on GitHub. Pull to get it locally:
+
+```bash
 git pull --rebase
 ```
 
-### Find and parse the agentflow-init file
+### Find and read the agentflow-init file
 
-Look for `agentflow-init-*.md` files in the current directory.
-- None found after pull → stop: "No agentflow-init-*.md file found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
-- Exactly one found → use it.
-- Multiple found → list them and ask the user which feature to initialize.
+Look for `agentflow-init-*.md` files in the repository root (current directory, on the root branch).
 
-Extract from the chosen file: `title`, `branch`, `worktree`, `root` (default: `develop`).
+- If no file is found after pulling, stop and tell the Human:
+  > "No agentflow-init-*.md file found after git pull. Ask the Web Reviewer to confirm they committed it to the develop branch."
+- If exactly one file is found, use it.
+- If multiple files are found, list them and ask the Human which feature to initialize.
 
-### Verify branch
+Read the file and extract these parameters:
+- `title`
+- `branch`
+- `worktree`
+- `root` (default: `develop` if not specified)
 
-Run `git rev-parse --abbrev-ref HEAD`.
-- Not on root branch → stop and tell the user which branch is current.
+### Verify you are on the root branch
 
-### Remove the agentflow-init file from root branch BEFORE init
+Check the current branch:
+```bash
+git rev-parse --abbrev-ref HEAD
+```
 
-Critical: remove the file from `develop` before creating the worktree so it is not inherited by the new feature branch.
+If you are not on the root branch (usually `develop`), stop and tell the Human which branch you are on.
 
-Let `<init-file>` be the filename found above.
-- Exists → `git rm <init-file> && git commit -m "chore: consume <init-file>" && git push`
-- Already removed → skip.
+### Remove the agentflow-init file from the root branch BEFORE init
 
-### Initialize workspace
+This is critical: the init file must be removed from `develop` before the worktree is created, otherwise the file will be inherited by the new feature branch.
 
-Run `agentflow status` to check if a workspace for this branch already exists.
-- Exists → skip to verification.
-- Not found → run:
+Let `<init-file>` be the filename found in the previous step.
+
+Check if it still exists:
+- If it exists → remove and commit on the root branch:
+  ```bash
+  git rm <init-file>
+  git commit -m "chore: consume <init-file>"
+  git push
   ```
-  agentflow init --root <root> --branch <branch> --worktree <worktree> --title "<title>"
-  ```
-  If no remote is configured, `agentflow init` will fail with a clear message. Tell the user to run:
-  ```
-  git remote add origin git@github.com:<user>/<repo>.git
-  ```
+- If it was already removed → skip.
 
-### Verify result
+### Run agentflow init
 
-Run `agentflow status`. Confirm:
-- Exchange folder is listed
-- `phase: intake`
-- `turn: web`
+Check if the workspace already exists by running `agentflow status`.
+- If the exchange folder for this branch already exists → skip to the verification step.
+- If it does not exist → run:
 
+```bash
+agentflow init \
+  --root <root> \
+  --branch <branch> \
+  --worktree <worktree> \
+  --title "<title>"
+```
+
+The `--push` flag is enabled by default. If there is no remote configured yet, `agentflow init` will fail with a clear message — tell the Human to add a remote first:
+```bash
+git remote add origin git@github.com:<user>/<repo>.git
+```
+
+### Verify the result
+
+Run:
+```bash
+agentflow status
+```
+
+Confirm that:
+- The exchange folder was created
+- `phase` is `intake`
+- `turn` is `web`
+- `next_action` is `begin_discovery`
 
 ## Constraints
 
@@ -78,13 +107,13 @@ Run `agentflow status`. Confirm:
 
 ## Success Criteria
 
-- `agentflow status` shows exchange folder with `phase: intake`, `turn: web`
+- `agentflow status` shows exchange folder with `phase: intake`, `turn: web`, `next_action: begin_discovery`
 - The `agentflow-init-*.md` file no longer exists in the repo root
 - Branch and worktree are pushed to GitHub
 
 ## Next Step
 
 Tell the user:
-> "Workspace ready on branch <branch>. Tell the Web Reviewer they can read the exchange folder on GitHub and begin Phase 1 — Discovery."
+> Workspace ready on branch <branch>. Tell the Web Reviewer they can read the exchange folder on GitHub and begin Phase 1 — Discovery.
 
 Stop.

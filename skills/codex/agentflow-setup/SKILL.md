@@ -7,41 +7,52 @@ description: Initializes a new software project for AgentFlow collaboration. Use
 
 ## Core Workflow
 
-1. Verify prerequisites (`git`, `gh` authenticated, `agentflow` installed).
-2. Initialize git if not already done.
-3. Create `docs/WEB-AGENT-ROLE.md` if it does not exist.
-4. Create `.gitignore` with `.worktrees/` if not already present.
-5. Commit any new files.
-6. Create the GitHub repository and push.
+1. Verify prerequisites
+2. Get project name
+3. Initialize git
+4. Create docs/WEB-AGENT-ROLE.md
+5. Create .gitignore
+6. Commit
+7. Create the GitHub repository
 
 ## Idempotency
 
-Check each step before executing. Skip steps that are already complete. Never duplicate work or overwrite existing files.
+Before executing any step, check if it was already done. Skip completed steps silently and continue from where things left off. Never duplicate work or overwrite existing results. If everything is already done, say so and stop.
 
 ## Step Detail
 
-### Prerequisites
+### Verify prerequisites
 
-Run and verify:
-- `git --version`
-- `gh auth status`
-- `agentflow --help`
+Check that the following tools are available:
+- `git` — for version control
+- `gh` — GitHub CLI, authenticated (`gh auth status`)
+- `agentflow` — AgentFlow CLI
 
-Stop with a clear message if any is missing.
+If any is missing, stop and tell the Human what needs to be installed before continuing.
 
-### Git initialization
+### Get project name
 
-Check: `git rev-parse --git-dir`
-- Not found → `git init -b develop`
-- Found → confirm current branch is `develop`. If not, stop and tell the user.
+If the current directory name is not a suitable project name, ask the Human to confirm before proceeding.
 
-### docs/WEB-AGENT-ROLE.md
+Use the current directory name as the repository name unless the Human specifies otherwise.
 
-Check if the file exists.
-- If not → create `docs/` and write the file. Content must explain to the Web Reviewer: their role in AgentFlow, how to create `agentflow-init-<branch-slug>.md`, how to review each phase, and how to update STATUS.md. See the AgentFlow documentation at https://github.com/AjorCastro/agentflow for the canonical content.
-- If exists → skip.
+### Initialize git
 
-### .gitignore
+Check if a git repository already exists (`git rev-parse --git-dir`).
+- If it does not exist → run `git init -b develop`
+- If it already exists → skip, verify current branch is `develop`. If not, tell the Human and stop.
+
+### Create docs/WEB-AGENT-ROLE.md
+
+Run:
+```bash
+agentflow docs sync
+```
+This writes (or refreshes) `docs/WEB-AGENT-ROLE.md` on the `develop` branch directly from the canonical content built into the `agentflow` binary, and commits it if it changed.
+
+There is nothing to write by hand here — never hand-copy this file's content into a skill file or a chat message. A hand-copied version will drift out of date the next time the binary changes; `agentflow docs sync` never can, because it always reflects whatever binary is currently installed.
+
+### Create .gitignore
 
 Check if `.worktrees/` is already ignored.
 - If not → create or append `.worktrees/` to `.gitignore`.
@@ -49,16 +60,23 @@ Check if `.worktrees/` is already ignored.
 
 ### Commit
 
-Check: `git status --short`
-- Changes present → `git add -A && git commit -m "chore: initial project setup"`
-- Clean → skip.
+Check if there are staged or unstaged changes (`git status --short`).
+- If there are changes → stage and commit:
+  ```bash
+  git add -A
+  git commit -m "chore: initial project setup"
+  ```
+- If the tree is already clean → skip.
 
-### GitHub repository
+### Create the GitHub repository
 
-Check: `git remote`
-- No remote → `gh repo create <project-name> --public --source . --remote origin --push`
-  Ask the user if they prefer `--private`.
-- Remote exists → check if branch is pushed. If not, push. If already pushed → skip.
+Check if a remote named `origin` already exists (`git remote`).
+- If it does not exist → create the repo and push:
+  ```bash
+  gh repo create <project-name> --public --source . --remote origin --push
+  ```
+  If the Human wants a private repository, use `--private`. When in doubt, ask.
+- If `origin` already exists → check if the branch is up to date. If not, push. If already pushed → skip.
 
 ## Constraints
 
@@ -74,6 +92,7 @@ Check: `git remote`
 
 ## Next Step
 
-Tell the user the GitHub URL and instruct them to share it with the Web Reviewer, asking them to read `docs/WEB-AGENT-ROLE.md`.
+Tell the user:
+> Project is ready at <github-url>. Share this URL with the Web Reviewer and ask them to read docs/WEB-AGENT-ROLE.md to start.
 
-Stop. Do not start any feature work.
+Stop.

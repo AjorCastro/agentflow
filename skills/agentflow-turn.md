@@ -4,23 +4,28 @@ It is your turn to act. Read the current state of the exchange folder and do wha
 
 ## Idempotency
 
-Before executing any step, check if it was already done. Look for existing files in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.
+Before executing any step, check what already exists in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.
 
-## Before you start
+## Steps
 
-Pull latest changes from origin first:
+### 1. Pull latest changes from origin
 
 ```bash
 git pull --rebase
 ```
 
-Then orient yourself: read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
+### 2. Orient yourself
 
-Then read these files in order:
+Read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
 
-1. `.agentflow/features/*/CONFIG.md` — understand the feature, scope, and policies
-2. `.agentflow/features/*/STATUS.md` — understand current phase, turn, and next action
-3. `.agentflow/features/*/state.json` — confirm `current_turn` is `cli`
+### 3. Read the exchange folder
+
+Find: `.agentflow/features/*/`
+
+Read in order:
+1. `CONFIG.md` — feature scope, constraints, policies
+2. `STATUS.md` — current phase, turn, next action
+3. `state.json` — confirm `current_turn` is `cli`
 
 If `current_turn` is not `cli`, stop and tell the Human:
 > "The current turn is not assigned to the CLI Agent. STATUS.md says: [current_turn value]."
@@ -28,25 +33,26 @@ If `current_turn` is not `cli`, stop and tell the Human:
 If there are files in `decisions/` that have not been resolved, stop and tell the Human:
 > "There is an unresolved decision request. Please resolve it before asking me to continue."
 
-## Do the work
+### 4. Read phase context
 
 Read everything in the exchange folder that is relevant to the current phase:
+- `specs/` — feature specifications
 - `discovery/` — research and codebase analysis
 - `plans/` — implementation plans
 - `tasks/` — previous task results
 - `reviews/` — feedback from the Web Reviewer
-- `specs/` — feature specifications
+
+### 5. Do the work
 
 Act according to what `STATUS.md` says is the `next_action`. Use your judgment — the context in the exchange folder is enough to know what is expected.
 
-### Core policies (from CONFIG.md — always apply)
-
+Core policies (from CONFIG.md — always apply):
 - Do not implement anything before discovery and planning have been approved by the Web Reviewer.
-- When you find ambiguity or risk, do not guess. Create a decision request instead (see below).
+- When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).
 - Write a result file at the end of every task.
 - Update STATUS.md and state.json at every handoff.
 
-### If you find ambiguity or risk
+### 6. If you find ambiguity or risk
 
 Create a file at:
 ```
@@ -73,70 +79,76 @@ With this content:
 
 Then update STATUS.md and state.json with `current_turn: web` and stop. The Web Reviewer will read the decision file, discuss with the Human if needed, and return the turn to `cli`.
 
-## When you finish
+### 7. Write a result file
 
-1. Write a result file at:
-   ```
-   tasks/task-<YYYY-MM-DD>-<short-slug>.md
-   ```
-   Summarizing what you did, what files you created or modified, and any open questions.
+At the end of every task, write a result file at:
+```
+tasks/task-<YYYY-MM-DD>-<short-slug>.md
+```
+Summarizing what you did, what files you created or modified, and any open questions.
 
-2. Update `STATUS.md`:
-   ```markdown
-   ## Current phase
-   <current or next phase>
+### 8. Update STATUS.md and state.json
 
-   ## Current turn
-   web
+Update `STATUS.md`:
+```markdown
+## Current phase
+<current or next phase>
 
-   ## Status
-   <short description of what was completed>
+## Current turn
+web
 
-   ## Next action
-   <what the Web Reviewer should do>
+## Status
+<short description of what was completed>
 
-   ## Last update
-   <timestamp>
-   ```
+## Next action
+<what the Web Reviewer should do>
 
-3. Update `state.json` with the same values.
+## Last update
+<timestamp>
+```
 
-4. Write a handoff note at:
-   ```
-   handoffs/handoff-<YYYY-MM-DD>-claude-code.md
-   ```
-   With this content:
-   ```markdown
-   # Handoff — <phase> — <date>
+Update `state.json` with the same values (`current_phase`/`current_turn` must match `STATUS.md` literally; `status`/`next_action` are a machine-slug equivalent of the same fact, not a literal copy — see `docs/WEB-AGENT-ROLE.md` for the exact rule).
 
-   ## Agent
-   Claude Code
+### 9. Write a handoff note
 
-   ## What was done
-   <summary of this turn>
+Write a handoff note at:
+```
+handoffs/handoff-<YYYY-MM-DD>-claude-code.md
+```
+With this content:
+```markdown
+# Handoff — <phase> — <date>
 
-   ## Files created or modified
-   <list>
+## Agent
+Claude Code
 
-   ## Next step for the CLI Agent
-   <exact next action when the turn returns to cli>
+## What was done
+<summary of this turn>
 
-   ## Open questions
-   <if any, otherwise "none">
-   ```
+## Files created or modified
+<list>
 
-   Also copy the same content to `.claude/handoffs/LATEST.md` in the project root — Claude Code auto-injects this file as context at session start.
+## Next step for the CLI Agent
+<exact next action when the turn returns to cli>
 
-5. Commit and push:
-   ```bash
-   git add -A
-   git commit -m "cli: <short description of what was done>"
-   git push
-   ```
+## Open questions
+<if any, otherwise "none">
+```
 
-6. Tell the Human:
-   > "Done. The Web Reviewer can now review [what you did] on branch [branch name]."
+Also copy the same content to `.claude/handoffs/LATEST.md` in the project root — Claude Code auto-injects this file as context at session start.
 
-## Stop
+### 10. Commit and push
+
+```bash
+git add -A
+git commit -m "cli: <short description of what was done>"
+git push
+```
+
+### 11. Tell the Human
+
+> Done. The Web Reviewer can now review [what you did] on branch [branch name].
+
+### 12. Stop
 
 Do not start the next phase or continue working. Your turn is complete.

@@ -44,7 +44,7 @@ If you are not on the root branch (usually `develop`), stop and tell the Human w
 
 This is critical: the init file must be removed from `develop` before the worktree is created, otherwise the file will be inherited by the new feature branch.
 
-Let `<init-file>` be the filename found in step 2.
+Let `<init-file>` be the filename found in the previous step.
 
 Check if it still exists:
 - If it exists → remove and commit on the root branch:
@@ -58,7 +58,7 @@ Check if it still exists:
 ### 5. Run agentflow init
 
 Check if the workspace already exists by running `agentflow status`.
-- If the exchange folder for this branch already exists → skip to step 5.
+- If the exchange folder for this branch already exists → skip to the verification step.
 - If it does not exist → run:
 
 ```bash

@@ -10,14 +10,13 @@ Before executing any step, check if it was already done. If the worktree is alre
 
 ### 1. Read the current state
 
-Read `STATUS.md` and `state.json` to get:
-- `feature_branch`
-- `worktree`
-- `root_branch`
+Run `agentflow status` to find `feature_branch`, `worktree`, and `root_branch`.
+
+If no AgentFlow workspace is found, stop and tell the Human.
 
 ### 2. Confirm the feature is merged
 
-Check with the Human that the branch has been merged to the root branch before continuing.
+Ask the Human to confirm that the branch has been merged to the root branch before continuing. Do not proceed without this confirmation.
 
 ### 3. Run agentflow close
 
@@ -28,9 +27,13 @@ agentflow close --branch <feature_branch> --root <root_branch>
 ```
 
 If the Human also wants to delete the remote branch:
-
 ```bash
 agentflow close --branch <feature_branch> --root <root_branch> --delete-remote
+```
+
+If the branch is not detected as merged but the Human is certain it was merged, use `--force` — but never use it unless the Human explicitly asks for it:
+```bash
+agentflow close --branch <feature_branch> --root <root_branch> --force
 ```
 
 `agentflow close` also removes `.agentflow/features/<feature-id>/` from `root_branch` if present — the merge carries those files into root, and leaving them there would clutter it permanently.
