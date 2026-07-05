@@ -70,6 +70,8 @@ The Web Reviewer will ask clarifying questions, propose the branch/worktree name
 /agentflow-init
 ```
 
+> **Naming note:** `branch-slug` and `feature-id` are two different derived names — don't confuse them. `branch-slug` is the full branch name with every `/` turned into `-` (used only for the init request filename above). `feature-id` is the same, but with a leading `feature/` dropped first (used for the exchange folder, since `.agentflow/features/` already says "feature"). For branch `feature/my-feature`: `branch-slug` = `feature-my-feature`, `feature-id` = `my-feature` → folder `.agentflow/features/my-feature/`.
+
 ### Step 5 — Work
 
 From this point, the cycle is:
