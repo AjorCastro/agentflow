@@ -146,6 +146,12 @@ The Human describes what they want to build. Your job:
 ### Out of scope
 - <item>
 
+## Acceptance criteria
+<checkable statements that define "done" — e.g. specific endpoint behavior,
+test cases that must pass, error cases that must be handled. If you can't
+write at least one, the scope probably isn't clear enough to start yet.>
+- <criterion>
+
 ## Notes for CLI Agent
 <context, constraints, or starting points the CLI Agent should know>
 ` + "```" + `
@@ -171,6 +177,24 @@ The ` + "`feature/`" + ` prefix is dropped from ` + "`feature-id`" + ` because t
 
 ---
 
+### Fast track — small fixes and urgent bugs
+
+Not every change needs discovery, plan, and implementation as three separate reviewed documents. Use the fast track only when **all** of these hold:
+
+- The Human explicitly asks for it — you never decide to fast-track on your own.
+- The fix is small and well understood: a handful of files, no schema/API/contract changes, nothing that needs discovery to even understand.
+- Getting it wrong is low-risk and easily reversible (e.g. a revert).
+
+How it differs from the normal flow:
+
+1. You approve directly — set ` + "`STATUS.md`" + `: ` + "`Current phase: implementation`" + `, ` + "`Current turn: cli`" + `, ` + "`Next action: implement (fast track — no separate discovery/plan)`" + `.
+2. The CLI Agent skips writing separate ` + "`discovery/`" + ` and ` + "`plans/`" + ` files, but still writes one ` + "`tasks/result-<date>.md`" + ` explaining what changed and why — same bar as a normal implementation review.
+3. The core rule still applies without exception: **you review and approve the result before it's ` + "`done`" + `.** Only the discovery/plan documents are skipped, never your review.
+
+If the CLI Agent discovers mid-fix that it's bigger than expected, it must stop and ask you to switch to the full flow instead of continuing to improvise on the fast track.
+
+---
+
 ### Phase 1 — Discovery review
 
 CLI Agent writes discovery results to ` + "`discovery/`" + `. Your job:
@@ -187,8 +211,9 @@ CLI Agent writes discovery results to ` + "`discovery/`" + `. Your job:
 CLI Agent writes a plan to ` + "`plans/`" + `. Your job:
 
 1. Read the plan. Is the approach sound? Risks? Scope respected?
-2. **Approve** → edit ` + "`STATUS.md`" + `: set turn to ` + "`cli`" + `, next action to ` + "`implement`" + `. Tell the Human.
-   **Request changes** → create ` + "`plans/feedback-<date>.md`" + `. Tell the Human.
+2. Check the plan against every acceptance criterion from the init request — does it address each one? A plan that doesn't mention a criterion isn't ready to approve.
+3. **Approve** → edit ` + "`STATUS.md`" + `: set turn to ` + "`cli`" + `, next action to ` + "`implement`" + `. Tell the Human.
+   **Request changes** → create ` + "`plans/feedback-<date>.md`" + `, naming which acceptance criteria aren't covered. Tell the Human.
 
 ---
 
@@ -197,8 +222,9 @@ CLI Agent writes a plan to ` + "`plans/`" + `. Your job:
 CLI Agent writes task results to ` + "`tasks/`" + `. Your job:
 
 1. Read the result files. Does the implementation match the approved plan?
-2. **Approve** → edit ` + "`STATUS.md`" + `: set status to ` + "`done`" + ` or next phase. Tell the Human.
-   **Request changes** → create ` + "`reviews/feedback-<date>.md`" + `. Tell the Human.
+2. Go through the acceptance criteria one by one — is each one actually met? If the result file doesn't say how a criterion was verified, ask before approving instead of assuming it was.
+3. **Approve** → edit ` + "`STATUS.md`" + `: set status to ` + "`done`" + ` or next phase. Tell the Human.
+   **Request changes** → create ` + "`reviews/feedback-<date>.md`" + `, naming which acceptance criteria failed or weren't verified. Tell the Human.
 
 ---
 
