@@ -79,6 +79,8 @@ From this point, the cycle is:
 - Web Reviewer reviews on GitHub, approves or redirects
 - Repeat until the feature is done
 
+When the Web Reviewer and Human are satisfied, the **Human** merges the feature branch into the root branch (e.g. via a pull request, or `git merge`/`git push` directly) — AgentFlow does not do this automatically. Only after that merge is complete should you move to Step 6.
+
 ### Step 6 — Close
 
 After merging to `develop`, ask the CLI Agent to run:
@@ -86,6 +88,8 @@ After merging to `develop`, ask the CLI Agent to run:
 ```
 /agentflow-close
 ```
+
+This removes the worktree, deletes the feature branch, and also removes `.agentflow/features/<feature-id>/` from `develop` — the merge in Step 5 carried those files into `develop` along with the rest of the feature's changes, so `close` cleans them up as its last step.
 
 ---
 
@@ -215,23 +219,24 @@ agentflow init \
 
 7. **Web Reviewer / Human** reviews, approves or redirects. Repeat for each phase.
 
-8. After merge to develop, **Human** runs `agentflow close` to clean up.
+8. After merge to develop, **Human** runs `agentflow close` to clean up — removes the worktree, deletes the branch, and removes the now-merged `.agentflow/features/<feature-id>/` folder from develop.
 
 ---
 
 ## Example: `agentflow close`
 
 ```bash
-agentflow close --branch feature/my-feature
+agentflow close --branch feature/my-feature --root develop
 ```
 
-Verifies the branch is merged, removes the linked worktree, and deletes the local branch.
+Verifies the branch is merged, removes the linked worktree, deletes the local branch, and removes `.agentflow/features/<feature-id>/` from `--root` if present (the merge carries it there along with the rest of the feature's changes). Must be run from the repository checked out on `--root`, not from the worktree being removed.
 
 ### Flags
 
 | Flag              | Default  | Description                              |
 |-------------------|----------|------------------------------------------|
 | `--repo`          | `.`      | Path to the git repository               |
+| `--root`          | `develop` | Root branch the feature was merged into |
 | `--branch`        | *(required)* | Feature branch to close              |
 | `--delete-remote` | `false`  | Also delete the branch on origin         |
 | `--force`         | `false`  | Close even if branch is not fully merged |

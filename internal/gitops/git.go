@@ -182,6 +182,20 @@ func ListWorktrees(dir string) ([]string, error) {
 	return paths, nil
 }
 
+// RemovePathAndCommit removes relPath (relative to repoDir) from the index
+// and working tree, and commits the removal.
+func RemovePathAndCommit(repoDir, relPath, message string) error {
+	rmOut, err := exec.Command("git", "-C", repoDir, "rm", "-r", "-q", "--", relPath).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git rm failed: %w\n%s", err, rmOut)
+	}
+	commitOut, err := exec.Command("git", "-C", repoDir, "commit", "-m", message).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git commit failed: %w\n%s", err, commitOut)
+	}
+	return nil
+}
+
 // PushBranch pushes branch to origin, setting upstream.
 func PushBranch(worktreeDir, branch string) error {
 	out, err := exec.Command("git", "-C", worktreeDir, "push", "-u", "origin", branch).CombinedOutput()

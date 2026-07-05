@@ -2,14 +2,17 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/AjorCastro/agentflow/internal/gitops"
+	"github.com/AjorCastro/agentflow/internal/protocol"
 	"github.com/spf13/cobra"
 )
 
 type closeOptions struct {
 	repo         string
+	root         string
 	branch       string
 	deleteRemote bool
 	force        bool
@@ -27,6 +30,7 @@ func newCloseCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&opts.repo, "repo", ".", "Path to the git repository")
+	cmd.Flags().StringVar(&opts.root, "root", "develop", "Root branch the feature was merged into")
 	cmd.Flags().StringVar(&opts.branch, "branch", "", "Feature branch to close (required)")
 	cmd.Flags().BoolVar(&opts.deleteRemote, "delete-remote", false, "Also delete the remote branch")
 	cmd.Flags().BoolVar(&opts.force, "force", false, "Force removal even if branch is not fully merged")
@@ -89,6 +93,39 @@ func runClose(opts *closeOptions) error {
 			fmt.Printf("Deleting remote branch %s ...\n", opts.branch)
 			if err := gitops.DeleteRemoteBranch(repoAbs, opts.branch); err != nil {
 				return err
+			}
+		}
+	}
+
+	// Remove the merged exchange folder from the root branch, if present.
+	// The feature branch carries .agentflow/features/<feature-id>/ as regular
+	// tracked files, so merging it into root leaves that folder behind —
+	// deleting the worktree and the branch alone does not clean it up.
+	featureID := protocol.FeatureIDFromBranch(opts.branch)
+	exchangeRel := filepath.Join(".agentflow", "features", featureID)
+	exchangeAbs := filepath.Join(repoAbs, exchangeRel)
+
+	if _, err := os.Stat(exchangeAbs); err == nil {
+		currentBranch, err := gitops.CurrentBranch(repoAbs)
+		if err != nil {
+			return err
+		}
+		if currentBranch != opts.root {
+			fmt.Printf(
+				"\n%s still exists but %s is on branch %q, not %q — skipping cleanup.\n"+
+					"Run 'agentflow close --branch %s --root %s' again from %q to remove it.\n",
+				exchangeRel, repoAbs, currentBranch, opts.root, opts.branch, opts.root, opts.root,
+			)
+		} else {
+			fmt.Printf("Removing merged exchange folder %s from %s ...\n", exchangeRel, opts.root)
+			msg := fmt.Sprintf("chore: remove exchange folder for closed feature %s", opts.branch)
+			if err := gitops.RemovePathAndCommit(repoAbs, exchangeRel, msg); err != nil {
+				return err
+			}
+			if gitops.HasRemote(repoAbs) {
+				if err := gitops.PushBranch(repoAbs, opts.root); err != nil {
+					return err
+				}
 			}
 		}
 	}

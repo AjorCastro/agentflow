@@ -19,7 +19,7 @@ Check each step before executing. If the worktree is already removed or the bran
 
 ### Read current state
 
-Run `agentflow status` to find `feature_branch` and `worktree`.
+Run `agentflow status` to find `feature_branch`, `worktree`, and `root_branch`.
 
 If no workspace is found, stop and tell the user.
 
@@ -29,13 +29,17 @@ Ask the user to confirm the branch has been merged before proceeding. Do not pro
 
 ### Run agentflow close
 
+Run this from the repository checked out on `root_branch` (not from the worktree being removed):
+
 ```
-agentflow close --branch <feature_branch>
+agentflow close --branch <feature_branch> --root <root_branch>
 ```
 
 Options:
 - To also delete the remote branch: `--delete-remote`
 - If the branch is not detected as merged but the user is certain: `--force`
+
+`agentflow close` also removes `.agentflow/features/<feature-id>/` from `root_branch` if present — the merge carries those files into root, and leaving them there would clutter it permanently.
 
 ## Constraints
 

@@ -13,6 +13,7 @@ Before executing any step, check if it was already done. If the worktree is alre
 Read `STATUS.md` and `state.json` to get:
 - `feature_branch`
 - `worktree`
+- `root_branch`
 
 ### 2. Confirm the feature is merged
 
@@ -20,15 +21,19 @@ Check with the Human that the branch has been merged to the root branch before c
 
 ### 3. Run agentflow close
 
+Run this from the repository checked out on `root_branch` (not from the worktree being removed):
+
 ```bash
-agentflow close --branch <feature_branch>
+agentflow close --branch <feature_branch> --root <root_branch>
 ```
 
 If the Human also wants to delete the remote branch:
 
 ```bash
-agentflow close --branch <feature_branch> --delete-remote
+agentflow close --branch <feature_branch> --root <root_branch> --delete-remote
 ```
+
+`agentflow close` also removes `.agentflow/features/<feature-id>/` from `root_branch` if present — the merge carries those files into root, and leaving them there would clutter it permanently.
 
 ### 4. Print summary
 
@@ -36,6 +41,7 @@ agentflow close --branch <feature_branch> --delete-remote
 Feature  : <feature_branch>
 Worktree : removed
 Branch   : deleted
+Exchange : removed from <root_branch>
 
 Next step: Run /agentflow-setup or agentflow init to start a new feature.
 ```
