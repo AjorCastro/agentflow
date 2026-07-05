@@ -3,6 +3,7 @@ package gitops
 import (
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -155,21 +156,25 @@ func HasRemote(dir string) bool {
 }
 
 // ListWorktrees returns the paths of all worktrees linked to the repo at dir,
-// excluding the main worktree itself.
+// excluding dir itself. `git worktree list` always lists every worktree
+// (main and linked) regardless of which one dir points at, so skipping by
+// position (e.g. "always skip the first line") would incorrectly keep dir
+// itself in the result whenever dir is a linked worktree rather than the
+// main one.
 func ListWorktrees(dir string) ([]string, error) {
 	out, err := exec.Command("git", "-C", dir, "worktree", "list", "--porcelain").Output()
 	if err != nil {
 		return nil, fmt.Errorf("git worktree list failed: %w", err)
 	}
 
+	dirClean := filepath.Clean(dir)
+
 	var paths []string
-	first := true
 	for _, line := range strings.Split(string(out), "\n") {
 		if strings.HasPrefix(line, "worktree ") {
 			path := strings.TrimPrefix(line, "worktree ")
-			if first {
-				first = false // skip main worktree
-				continue
+			if filepath.Clean(path) == dirClean {
+				continue // skip dir itself, whichever worktree that is
 			}
 			paths = append(paths, path)
 		}
