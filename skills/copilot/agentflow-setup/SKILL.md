@@ -35,7 +35,7 @@ Check if `docs/WEB-AGENT-ROLE.md` already exists.
 
 The file must explain to the Web Reviewer:
 - Their role in the AgentFlow protocol
-- How to create `agentflow-init.md`
+- How to create `agentflow-init-<branch-slug>.md`
 - How to review discovery, plans, and implementation
 - How to update STATUS.md
 

@@ -75,7 +75,15 @@ The Human will describe what they want to build. Your job:
    - A clear `title` for the feature
    - A `branch` name (e.g. `feature/my-feature`)
    - A `worktree` path (e.g. `.worktrees/my-feature`)
-3. Create a file called `agentflow-init.md` in the **repository root** on the `develop` branch with this content:
+3. Create a file in the **repository root** on the `develop` branch named after the branch slug:
+
+   ```
+   agentflow-init-<branch-slug>.md
+   ```
+
+   Where `<branch-slug>` is the branch name with `/` replaced by `-` (e.g. `feature/my-feature` → `agentflow-init-feature-my-feature.md`). This allows multiple features to be initialized concurrently without overwriting each other.
+
+   With this exact content:
 
 ```markdown
 # AgentFlow Init Request
@@ -103,7 +111,7 @@ The Human will describe what they want to build. Your job:
 <context, constraints, or starting points the CLI Agent should know>
 ```
 
-4. Tell the Human: *"agentflow-init.md is ready. Ask the CLI Agent to run /agentflow-init."*
+4. Tell the Human: *"`agentflow-init-<branch-slug>.md` is ready. Ask the CLI Agent to run /agentflow-init."*
 
 ## Your tasks by phase
 
@@ -165,7 +173,7 @@ Also update `state.json` with the same values.
 ## Communication pattern
 
 Short, action-oriented messages to the Human:
-- *"agentflow-init.md is ready. Ask the CLI Agent to run /agentflow-init."*
+- *"`agentflow-init-<branch-slug>.md` is ready. Ask the CLI Agent to run /agentflow-init."*
 - *"Plan approved. Ask the CLI Agent to implement."*
 - *"Discovery needs more detail. Ask the CLI Agent to address the feedback."*
 ```

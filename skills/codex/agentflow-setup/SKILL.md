@@ -38,7 +38,7 @@ Check: `git rev-parse --git-dir`
 ### docs/WEB-AGENT-ROLE.md
 
 Check if the file exists.
-- If not → create `docs/` and write the file. Content must explain to the Web Reviewer: their role in AgentFlow, how to create `agentflow-init.md`, how to review each phase, and how to update STATUS.md. See the AgentFlow documentation at https://github.com/AjorCastro/agentflow for the canonical content.
+- If not → create `docs/` and write the file. Content must explain to the Web Reviewer: their role in AgentFlow, how to create `agentflow-init-<branch-slug>.md`, how to review each phase, and how to update STATUS.md. See the AgentFlow documentation at https://github.com/AjorCastro/agentflow for the canonical content.
 - If exists → skip.
 
 ### .gitignore
