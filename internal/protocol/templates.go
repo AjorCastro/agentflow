@@ -146,6 +146,23 @@ The Human describes what they want to build. Your job:
 
 ---
 
+### Naming reference — branch-slug vs. feature-id
+
+Two different names are derived from the branch, for two different purposes. Do not confuse them:
+
+| Name           | Rule                                                                          | Used for                                  |
+|----------------|--------------------------------------------------------------------------------|--------------------------------------------|
+| ` + "`branch-slug`" + `  | The full branch name with every ` + "`/`" + ` replaced by ` + "`-`" + ` (nothing stripped)         | The init request filename                 |
+| ` + "`feature-id`" + `   | Same as above, but a leading ` + "`feature/`" + ` prefix is dropped first                | The exchange folder under ` + "`.agentflow/features/`" + ` |
+
+Example for branch ` + "`feature/my-feature`" + `:
+- ` + "`branch-slug`" + ` = ` + "`feature-my-feature`" + ` → file ` + "`agentflow-init-feature-my-feature.md`" + `
+- ` + "`feature-id`" + ` = ` + "`my-feature`" + ` → folder ` + "`.agentflow/features/my-feature/`" + `
+
+The ` + "`feature/`" + ` prefix is dropped from ` + "`feature-id`" + ` because the parent directory is already named ` + "`features/`" + ` — keeping it would produce a redundant ` + "`.agentflow/features/feature-my-feature/`" + ` path.
+
+---
+
 ### Phase 1 — Discovery review
 
 CLI Agent writes discovery results to ` + "`discovery/`" + `. Your job:

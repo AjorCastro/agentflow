@@ -74,6 +74,13 @@ func runInit(opts *initOptions) error {
 		)
 	}
 
+	// Keep docs/WEB-AGENT-ROLE.md on the root branch in sync with the binary's
+	// canonical content, so projects set up with an older agentflow version
+	// don't drift out of date. Every init is a natural sync point.
+	if err := refreshWebAgentRoleDoc(repoAbs, opts.root, opts.push); err != nil {
+		return err
+	}
+
 	// Derive feature ID early; exchange path is resolved after workDir is known.
 	featureID := protocol.FeatureIDFromBranch(opts.branch)
 	if opts.title == "" {
@@ -156,6 +163,55 @@ func runInit(opts *initOptions) error {
 
 	// Summary.
 	printInitSummary(repoAbs, opts, exchangeAbs)
+	return nil
+}
+
+// refreshWebAgentRoleDoc overwrites docs/WEB-AGENT-ROLE.md on the root branch
+// with the current canonical content, committing and pushing only if it
+// actually changed. Skipped (non-fatal) if repoAbs isn't currently checked
+// out on root — we never implicitly switch branches for the user.
+func refreshWebAgentRoleDoc(repoAbs, root string, push bool) error {
+	current, err := gitops.CurrentBranch(repoAbs)
+	if err != nil {
+		return err
+	}
+	if current != root {
+		fmt.Printf("Note: %s is on branch %q, not %q — skipping docs/WEB-AGENT-ROLE.md refresh.\n", repoAbs, current, root)
+		return nil
+	}
+
+	docRel := filepath.Join("docs", "WEB-AGENT-ROLE.md")
+	docAbs := filepath.Join(repoAbs, docRel)
+	content := protocol.WebAgentRoleMD()
+
+	if existing, err := os.ReadFile(docAbs); err == nil && string(existing) == content {
+		return nil
+	}
+
+	if err := os.MkdirAll(filepath.Join(repoAbs, "docs"), 0755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(docAbs, []byte(content), 0644); err != nil {
+		return err
+	}
+
+	changed, err := gitops.PathHasChanges(repoAbs, docRel)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+
+	fmt.Println("Refreshing docs/WEB-AGENT-ROLE.md with the latest canonical content...")
+	if err := gitops.AddPathAndCommit(repoAbs, docRel, "chore: refresh docs/WEB-AGENT-ROLE.md"); err != nil {
+		return err
+	}
+	if push && gitops.HasRemote(repoAbs) {
+		if err := gitops.PushBranch(repoAbs, root); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

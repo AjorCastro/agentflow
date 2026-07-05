@@ -182,6 +182,29 @@ func ListWorktrees(dir string) ([]string, error) {
 	return paths, nil
 }
 
+// PathHasChanges returns true if relPath (relative to repoDir) has staged or
+// unstaged changes.
+func PathHasChanges(repoDir, relPath string) (bool, error) {
+	out, err := exec.Command("git", "-C", repoDir, "status", "--porcelain", "--", relPath).Output()
+	if err != nil {
+		return false, fmt.Errorf("git status failed: %w", err)
+	}
+	return strings.TrimSpace(string(out)) != "", nil
+}
+
+// AddPathAndCommit stages relPath (relative to repoDir) and commits it.
+func AddPathAndCommit(repoDir, relPath, message string) error {
+	addOut, err := exec.Command("git", "-C", repoDir, "add", "--", relPath).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git add failed: %w\n%s", err, addOut)
+	}
+	commitOut, err := exec.Command("git", "-C", repoDir, "commit", "-m", message).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git commit failed: %w\n%s", err, commitOut)
+	}
+	return nil
+}
+
 // RemovePathAndCommit removes relPath (relative to repoDir) from the index
 // and working tree, and commits the removal.
 func RemovePathAndCommit(repoDir, relPath, message string) error {
