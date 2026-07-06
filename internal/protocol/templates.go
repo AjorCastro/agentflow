@@ -38,7 +38,7 @@ and approved by the Web Reviewer or Human.
 | state.json     | Machine-readable state (same info as STATUS.md)      |
 | specs/         | Feature specifications and requirements              |
 | discovery/     | Research outputs, codebase analysis                  |
-| plans/         | Implementation plans waiting for approval            |
+| plans/         | PLAN.md — the one current implementation plan, edited in place |
 | tasks/         | Task result files written by the CLI Agent           |
 | decisions/     | Decision requests and their resolutions              |
 | reviews/       | Review outputs from Web Reviewer                     |
@@ -208,12 +208,15 @@ CLI Agent writes discovery results to ` + "`discovery/`" + `. Your job:
 
 ### Phase 2 — Plan review
 
-CLI Agent writes a plan to ` + "`plans/`" + `. Your job:
+There is exactly one plan per feature: ` + "`plans/PLAN.md`" + `. The CLI Agent writes it once and, if scope evolves later, edits it in place and logs the change in its ` + "`## Changelog`" + ` section — it never creates a second plan file alongside it. Your job:
 
-1. Read the plan. Is the approach sound? Risks? Scope respected?
+1. Read ` + "`plans/PLAN.md`" + `. Is the approach sound? Risks? Scope respected?
 2. Check the plan against every acceptance criterion from the init request — does it address each one? A plan that doesn't mention a criterion isn't ready to approve.
-3. **Approve** → edit ` + "`STATUS.md`" + `: set turn to ` + "`cli`" + `, next action to ` + "`implement`" + `. Tell the Human.
+3. If ` + "`plans/PLAN.md`" + ` already exists and you're reviewing it again (a revision, not the first version), read the ` + "`## Changelog`" + ` entry for what changed and review only that delta against the acceptance criteria it affects.
+4. **Approve** → edit ` + "`STATUS.md`" + `: set turn to ` + "`cli`" + `, next action to ` + "`implement`" + `. Tell the Human.
    **Request changes** → create ` + "`plans/feedback-<date>.md`" + `, naming which acceptance criteria aren't covered. Tell the Human.
+
+If new, separable work surfaces that isn't a revision of the current plan's scope, that's a signal for a new feature (` + "`agentflow init`" + ` again), not a second plan bolted onto this one.
 
 ---
 

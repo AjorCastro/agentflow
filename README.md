@@ -194,6 +194,7 @@ agentflow init \
   specs/
   discovery/
   plans/
+    PLAN.md                    — the one current plan; revised in place, with a Changelog section
   tasks/
   decisions/
   reviews/

@@ -11,7 +11,8 @@ var TurnSkill = SkillDef{
 
 	Intro: "It is your turn to act. Read the current state of the exchange folder and do what is expected of you.",
 
-	Idempotency: "Before executing any step, check what already exists in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.",
+	Idempotency: "Before executing any step, check what already exists in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.\n\n" +
+		"`plans/PLAN.md` is the one exception to \"do not overwrite\": there is always exactly one plan per feature. If it already exists and you're asked to plan again — because scope evolved, not because you're starting a new feature — edit it in place and add an entry to its `## Changelog` section describing what changed and why. Never create a second plan file (e.g. `plan-2.md`, `plan-v2.md`) next to it. If the new work is not a revision of the current plan's scope but something separable, stop and tell the Human this looks like a new feature rather than a plan revision.",
 
 	Steps: []Step{
 		{
@@ -39,7 +40,7 @@ var TurnSkill = SkillDef{
 			Body: "Read everything in the exchange folder that is relevant to the current phase:\n" +
 				"- `specs/` — feature specifications\n" +
 				"- `discovery/` — research and codebase analysis\n" +
-				"- `plans/` — implementation plans\n" +
+				"- `plans/PLAN.md` — the current implementation plan (single file; check its `## Changelog` for revisions)\n" +
 				"- `tasks/` — previous task results\n" +
 				"- `reviews/` — feedback from the Web Reviewer",
 		},
@@ -49,7 +50,8 @@ var TurnSkill = SkillDef{
 				"Core policies (from CONFIG.md — always apply):\n" +
 				"- Do not implement anything before discovery and planning have been approved by the Web Reviewer.\n" +
 				"- When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).\n" +
-				"- Write a result file at the end of every task.\n" +
+				"- There is exactly one plan file: `plans/PLAN.md`. Create it once; on every later revision, edit it in place and add an entry under its `## Changelog` heading instead of creating a new file.\n" +
+					"- Write a result file at the end of every task.\n" +
 				"- Update STATUS.md and state.json at every handoff.",
 		},
 		{

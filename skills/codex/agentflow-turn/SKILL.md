@@ -22,6 +22,8 @@ description: Executes the CLI Agent's assigned turn in an AgentFlow workspace. U
 
 Before executing any step, check what already exists in `discovery/`, `plans/`, `tasks/`, and `decisions/` that correspond to the current phase. If results already exist for the current phase, do not overwrite them — report what you find and ask the Human whether to continue or start a new task.
 
+`plans/PLAN.md` is the one exception to "do not overwrite": there is always exactly one plan per feature. If it already exists and you're asked to plan again — because scope evolved, not because you're starting a new feature — edit it in place and add an entry to its `## Changelog` section describing what changed and why. Never create a second plan file (e.g. `plan-2.md`, `plan-v2.md`) next to it. If the new work is not a revision of the current plan's scope but something separable, stop and tell the Human this looks like a new feature rather than a plan revision.
+
 ## Step Detail
 
 ### Pull latest changes from origin
@@ -54,7 +56,7 @@ If there are files in `decisions/` that have not been resolved, stop and tell th
 Read everything in the exchange folder that is relevant to the current phase:
 - `specs/` — feature specifications
 - `discovery/` — research and codebase analysis
-- `plans/` — implementation plans
+- `plans/PLAN.md` — the current implementation plan (single file; check its `## Changelog` for revisions)
 - `tasks/` — previous task results
 - `reviews/` — feedback from the Web Reviewer
 
@@ -65,6 +67,7 @@ Act according to what `STATUS.md` says is the `next_action`. Use your judgment �
 Core policies (from CONFIG.md — always apply):
 - Do not implement anything before discovery and planning have been approved by the Web Reviewer.
 - When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).
+- There is exactly one plan file: `plans/PLAN.md`. Create it once; on every later revision, edit it in place and add an entry under its `## Changelog` heading instead of creating a new file.
 - Write a result file at the end of every task.
 - Update STATUS.md and state.json at every handoff.
 
