@@ -57,6 +57,7 @@ Core policies (from CONFIG.md — always apply):
 - Do not implement anything before discovery and planning have been approved by the Web Reviewer.
 - When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).
 - There is exactly one plan file: `plans/PLAN.md`. Create it once; on every later revision, edit it in place and add an entry under its `## Changelog` heading instead of creating a new file.
+- Once Phase 3 (implementation) is approved — `STATUS.md` says phase `done`, next action mentions merge — that approval already covers the PR and the merge. Open the PR if repo policy requires one, merge it, then run `agentflow close`. Do not create a decision request or otherwise ask the Web Reviewer to re-approve the PR or the merged result; only escalate if something unexpected happens (conflicts, failing CI).
 - Write a result file at the end of every task.
 - Update STATUS.md and state.json at every handoff.
 

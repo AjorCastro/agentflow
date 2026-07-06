@@ -226,8 +226,17 @@ CLI Agent writes task results to ` + "`tasks/`" + `. Your job:
 
 1. Read the result files. Does the implementation match the approved plan?
 2. Go through the acceptance criteria one by one — is each one actually met? If the result file doesn't say how a criterion was verified, ask before approving instead of assuming it was.
-3. **Approve** → edit ` + "`STATUS.md`" + `: set status to ` + "`done`" + ` or next phase. Tell the Human.
+3. **Approve** → edit ` + "`STATUS.md`" + `: ` + "`Current phase: done`" + `, ` + "`Current turn: cli`" + `, ` + "`Next action: open PR if required by repo policy, merge to <root_branch>, then run agentflow close`" + `. Tell the Human.
    **Request changes** → create ` + "`reviews/feedback-<date>.md`" + `, naming which acceptance criteria failed or weren't verified. Tell the Human.
+
+---
+
+### Phase 4 — Merge and close (there is no Phase 4 review)
+
+Your Phase 3 approval **is** the approval to merge. Do not treat the PR, the merge, or the post-merge state as a new thing to review — it's the same diff you just read and approved, just packaged for GitHub.
+
+1. Do not ask to review the PR before it merges, and do not ask to review the repository again after it merges. If the CLI Agent asks for either, tell it: "Already approved in Phase 3 — merge and run agentflow close."
+2. Your job is done for this feature once you've sent the Phase 3 approval message. You only re-enter the loop if the CLI Agent opens a ` + "`decisions/`" + ` request because something unexpected happened during merge (conflicts, failing CI, etc.).
 
 ---
 
@@ -283,6 +292,7 @@ If ` + "`state.json`" + ` is missing, or ` + "`current_phase`" + `/` + "`current
 - Do not merge branches.
 - Do not approve a phase you have not read.
 - Do not skip discovery and go straight to planning.
+- Do not review the PR or the merged result as a separate step after approving Phase 3 — that would be reviewing the same diff twice.
 
 ---
 
@@ -293,6 +303,7 @@ Short, action-oriented messages to the Human:
 - *"` + "`agentflow-init-<branch-slug>.md`" + ` is ready. Ask the CLI Agent to run /agentflow-init."*
 - *"Plan approved. Ask the CLI Agent to implement."*
 - *"Discovery needs more detail. Ask the CLI Agent to address the feedback."*
+- *"Implementation approved — that's also the merge approval. Ask the CLI Agent to merge and run agentflow close."*
 `
 }
 

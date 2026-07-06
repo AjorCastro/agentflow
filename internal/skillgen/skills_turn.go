@@ -51,6 +51,7 @@ var TurnSkill = SkillDef{
 				"- Do not implement anything before discovery and planning have been approved by the Web Reviewer.\n" +
 				"- When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).\n" +
 				"- There is exactly one plan file: `plans/PLAN.md`. Create it once; on every later revision, edit it in place and add an entry under its `## Changelog` heading instead of creating a new file.\n" +
+					"- Once Phase 3 (implementation) is approved — `STATUS.md` says phase `done`, next action mentions merge — that approval already covers the PR and the merge. Open the PR if repo policy requires one, merge it, then run `agentflow close`. Do not create a decision request or otherwise ask the Web Reviewer to re-approve the PR or the merged result; only escalate if something unexpected happens (conflicts, failing CI).\n" +
 					"- Write a result file at the end of every task.\n" +
 				"- Update STATUS.md and state.json at every handoff.",
 		},
