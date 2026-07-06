@@ -147,10 +147,11 @@ agentflow install-skills --agent codex
 ## Commands
 
 ```
-agentflow init      Initialize a new AgentFlow workspace
-agentflow status    Show current workspace status
-agentflow validate  Validate workspace structure
-agentflow close     Close a feature after merge
+agentflow init        Initialize a new AgentFlow workspace
+agentflow status      Show current workspace status
+agentflow validate    Validate workspace structure
+agentflow close       Close a feature after merge
+agentflow docs sync   Write/refresh docs/WEB-AGENT-ROLE.md from the binary's canonical content
 ```
 
 ---
@@ -249,6 +250,17 @@ Verifies the branch is merged, removes the linked worktree, deletes the local br
 go test ./...
 ```
 
+## Editing skills
+
+The 12 files under `skills/` (4 skills × Claude/Codex/Copilot) are generated
+from `internal/skillgen`, never hand-edited. To change a skill's steps, edit
+its `SkillDef` in `internal/skillgen/skills_*.go`, then:
+
+```bash
+go generate ./...
+go test ./...     # fails if skills/ doesn't match the SkillDefs
+```
+
 ---
 
 ## Project structure
@@ -262,18 +274,27 @@ agentflow/
     status.go                    — agentflow status
     validate.go                  — agentflow validate
     close.go                     — agentflow close
+    docs.go                      — agentflow docs sync
+    install_skills.go            — agentflow install-skills
   internal/gitops/
     git.go                       — git operations via os/exec
   internal/protocol/
     state.go                     — state.json read/write
-    templates.go                 — file content generators
+    templates.go                 — file content generators (incl. WebAgentRoleMD)
     validate.go                  — structure validation, path helpers
+  internal/skillgen/
+    skillgen.go                  — SkillDef/Step/Flavor types, Render dispatch
+    render_{claude,codex,copilot}.go — per-flavor markdown structure
+    skills_{init,setup,turn,close}.go — the 4 skills' SkillDefs (single source)
+    skillgen_test.go             — fails if skills/ is stale vs. these SkillDefs
+  cmd/gen-skills/main.go         — writes skills/ from internal/skillgen
   skills/
-    agentflow-*.md               — Claude Code skills
-    copilot/agentflow-*/SKILL.md — Copilot CLI skills
-    codex/agentflow-*/SKILL.md   — Codex CLI skills
-    embed.go                     — embeds all skills into the binary
+    agentflow-*.md               — Claude Code skills (generated, see internal/skillgen)
+    copilot/agentflow-*/SKILL.md — Copilot CLI skills (generated)
+    codex/agentflow-*/SKILL.md   — Codex CLI skills (generated)
+    embed.go                     — embeds all skills into the binary; go:generate lives here
   docs/
     DECISIONS.md                 — design decisions log
-    WEB-AGENT-ROLE.md            — full Web Reviewer instructions (reference copy)
+    WEB-AGENT-ROLE.md            — Web Reviewer instructions (kept in sync with
+                                    protocol.WebAgentRoleMD() via `agentflow docs sync`)
 ```
