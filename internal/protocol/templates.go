@@ -237,6 +237,7 @@ Your Phase 3 approval **is** the approval to merge. Do not treat the PR, the mer
 
 1. Do not ask to review the PR before it merges, and do not ask to review the repository again after it merges. If the CLI Agent asks for either, tell it: "Already approved in Phase 3 — merge and run agentflow close."
 2. Your job is done for this feature once you've sent the Phase 3 approval message. You only re-enter the loop if the CLI Agent opens a ` + "`decisions/`" + ` request because something unexpected happened during merge (conflicts, failing CI, etc.).
+3. If the CLI Agent reports back with a commit made *on the feature branch after the merge* (e.g. "recorded the merge in STATUS.md"), that's a protocol violation, not a status update — the feature branch is done the moment the PR merges. Tell it to stop; that commit will make ` + "`agentflow close`" + ` refuse to delete the branch because it's no longer fully contained in the merge.
 
 ---
 

@@ -6,7 +6,7 @@ var TurnSkill = SkillDef{
 	Name:  "agentflow-turn",
 	Title: "AgentFlow Turn",
 
-	DescriptionLong: "Executes the CLI Agent's assigned turn in an AgentFlow workspace. Use when the user says it is the CLI Agent's turn, asks to continue working on a feature, or mentions that the Web Reviewer has approved something. Trigger phrases include \"it's your turn\", \"the web reviewer approved\", \"continue the feature\", \"run your turn\", \"agentflow turn\", \"do the next step\".",
+	DescriptionLong:  "Executes the CLI Agent's assigned turn in an AgentFlow workspace. Use when the user says it is the CLI Agent's turn, asks to continue working on a feature, or mentions that the Web Reviewer has approved something. Trigger phrases include \"it's your turn\", \"the web reviewer approved\", \"continue the feature\", \"run your turn\", \"agentflow turn\", \"do the next step\".",
 	DescriptionShort: "Executes the CLI Agent's turn in an AgentFlow workspace. Use this whenever the user says it is the CLI Agent's turn to act, or asks you to continue working on a feature.",
 
 	Intro: "It is your turn to act. Read the current state of the exchange folder and do what is expected of you.",
@@ -51,8 +51,9 @@ var TurnSkill = SkillDef{
 				"- Do not implement anything before discovery and planning have been approved by the Web Reviewer.\n" +
 				"- When you find ambiguity or risk, do not guess. Create a decision request instead (see next step).\n" +
 				"- There is exactly one plan file: `plans/PLAN.md`. Create it once; on every later revision, edit it in place and add an entry under its `## Changelog` heading instead of creating a new file.\n" +
-					"- Once Phase 3 (implementation) is approved — `STATUS.md` says phase `done`, next action mentions merge — that approval already covers the PR and the merge. Open the PR if repo policy requires one, merge it, then run `agentflow close`. Do not create a decision request or otherwise ask the Web Reviewer to re-approve the PR or the merged result; only escalate if something unexpected happens (conflicts, failing CI).\n" +
-					"- Write a result file at the end of every task.\n" +
+				"- Once Phase 3 (implementation) is approved — `STATUS.md` says phase `done`, next action mentions merge — that approval already covers the PR and the merge. Open the PR if repo policy requires one, merge it, then run `agentflow close`. Do not create a decision request or otherwise ask the Web Reviewer to re-approve the PR or the merged result; only escalate if something unexpected happens (conflicts, failing CI).\n" +
+				"- The feature branch is done the moment the PR merges. Never push another commit to it afterward for any reason — not to record that it merged, not to update STATUS.md/state.json, not for a handoff note. That trailing commit is exactly what makes `agentflow close` refuse to delete the branch (it's no longer fully contained in the merge). If you need to note that the feature is closed, do it in a commit on the root branch, or simply let `agentflow close` remove the exchange folder.\n" +
+				"- Write a result file at the end of every task.\n" +
 				"- Update STATUS.md and state.json at every handoff.",
 		},
 		{
