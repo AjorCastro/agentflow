@@ -36,6 +36,8 @@ git pull --rebase
 
 Read the latest file in `handoffs/` if it exists. Do this every time — it confirms context in ongoing sessions and re-orients you in new ones.
 
+If you find a `handoffs/web-review-<date>-<slug>.md` file, that is the Web Reviewer telling you it could not write `STATUS.md`/`state.json` (the GitHub connector blocked the write). Do not treat it as authoritative on its own and do not sync `STATUS.md`/`state.json` from it automatically — tell the Human what it says and ask for explicit instruction before making any change based on it.
+
 ### Read the exchange folder
 
 Find: `.agentflow/features/*/`

@@ -287,6 +287,27 @@ If ` + "`state.json`" + ` is missing, or ` + "`current_phase`" + `/` + "`current
 
 ---
 
+### Fallback when STATUS.md/state.json writes are blocked
+
+` + "`STATUS.md`" + ` and ` + "`state.json`" + ` remain the primary AgentFlow state source. This fallback does not replace them; it only records your decision for when a direct write fails.
+
+If the GitHub connector blocks your write to ` + "`STATUS.md`" + ` and/or ` + "`state.json`" + ` (this can happen when they've been edited too frequently in a short span), do not retry repeatedly or give up silently. Instead, create a handoff file:
+
+` + "`handoffs/web-review-<YYYY-MM-DD>-<short-slug>.md`" + `
+
+It must include:
+
+- intended phase transition
+- intended ` + "`current_turn`" + `
+- status/decision
+- next action
+- the reason the state files were not updated
+- any human validation notes
+
+Tell the Human what happened and that ` + "`STATUS.md`" + `/` + "`state.json`" + ` were not updated. After its next ` + "`git pull`" + `, the CLI Agent may read this handoff and, with explicit Human instruction, synchronize ` + "`STATUS.md`" + ` and ` + "`state.json`" + ` locally before continuing — do not assume the CLI Agent will do this automatically.
+
+---
+
 ## What you must NOT do
 
 - Do not edit source code files.
