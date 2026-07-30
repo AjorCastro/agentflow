@@ -21,7 +21,7 @@ func newInstallSkillsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&agent, "agent", "claude", "Target agent: claude, copilot")
+	cmd.Flags().StringVar(&agent, "agent", "claude", "Target agent: claude, copilot, codex, kimi")
 
 	return cmd
 }
@@ -34,8 +34,10 @@ func runInstallSkills(agent string) error {
 		return installCopilotSkills()
 	case "codex":
 		return installCodexSkills()
+	case "kimi":
+		return installKimiSkills()
 	default:
-		return fmt.Errorf("unknown agent %q — supported: claude, copilot, codex", agent)
+		return fmt.Errorf("unknown agent %q — supported: claude, copilot, codex, kimi", agent)
 	}
 }
 
@@ -91,6 +93,20 @@ func installCodexSkills() error {
 func installCopilotSkills() error {
 	target := filepath.Join(os.Getenv("HOME"), ".copilot", "skills")
 	return installSkillFolders("copilot", target, "Copilot CLI", "run /skills reload to activate")
+}
+
+// installKimiSkills copies kimi/<skill>/ folders to <KIMI_CODE_HOME>/skills/
+// (default ~/.kimi-code/skills/) — the user-level "brand" skills directory
+// the installed kimi-code binary actually scans (confirmed by inspecting the
+// binary: it resolves brandHomeDir from $KIMI_CODE_HOME, falling back to
+// ~/.kimi-code, and looks for a "skills" subdirectory there — not ~/.kimi/).
+func installKimiSkills() error {
+	kimiHome := os.Getenv("KIMI_CODE_HOME")
+	if kimiHome == "" {
+		kimiHome = filepath.Join(os.Getenv("HOME"), ".kimi-code")
+	}
+	target := filepath.Join(kimiHome, "skills")
+	return installSkillFolders("kimi", target, "Kimi Code CLI", "invoke with /skill:<name>, e.g. /skill:agentflow-turn")
 }
 
 // installSkillFolders copies embedded <srcDir>/<skill>/ folders to target.

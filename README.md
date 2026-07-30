@@ -41,11 +41,12 @@ go install github.com/AjorCastro/agentflow/cmd/agentflow@latest
 agentflow install-skills                  # Claude Code (default)
 agentflow install-skills --agent copilot  # Copilot CLI
 agentflow install-skills --agent codex    # Codex CLI
+agentflow install-skills --agent kimi     # Kimi Code CLI
 ```
 
 ### Step 2 — Set up a new project
 
-Create a new project folder, open it in your CLI Agent (Claude Code, Copilot, Codex), and run:
+Create a new project folder, open it in your CLI Agent (Claude Code, Copilot, Codex, Kimi Code), and run:
 
 ```
 /agentflow-setup
@@ -124,6 +125,9 @@ agentflow install-skills --agent copilot
 
 # OpenAI Codex CLI
 agentflow install-skills --agent codex
+
+# Kimi Code CLI
+agentflow install-skills --agent kimi
 ```
 
 | Agent | Install location | Activation |
@@ -131,6 +135,7 @@ agentflow install-skills --agent codex
 | Claude Code | `~/.claude/commands/` | Available as `/agentflow-*` slash commands |
 | Copilot CLI | `~/.copilot/skills/` | Run `/skills reload` inside Copilot |
 | Codex CLI | `~/.codex/skills/` | Auto-detected from `description` field |
+| Kimi Code CLI | `~/.kimi-code/skills/` (or `$KIMI_CODE_HOME/skills/`) | Run `/reload` or start a new session, then invoke with `/skill:<name>`, e.g. `/skill:agentflow-turn` |
 
 #### Skills (all agents)
 
@@ -285,7 +290,7 @@ agentflow/
     validate.go                  — structure validation, path helpers
   internal/skillgen/
     skillgen.go                  — SkillDef/Step/Flavor types, Render dispatch
-    render_{claude,codex,copilot}.go — per-flavor markdown structure
+    render_{claude,codex,copilot}.go — per-flavor markdown structure (Kimi reuses render_codex.go — identical SKILL.md convention)
     skills_{init,setup,turn,close}.go — the 4 skills' SkillDefs (single source)
     skillgen_test.go             — fails if skills/ is stale vs. these SkillDefs
   cmd/gen-skills/main.go         — writes skills/ from internal/skillgen
@@ -293,6 +298,7 @@ agentflow/
     agentflow-*.md               — Claude Code skills (generated, see internal/skillgen)
     copilot/agentflow-*/SKILL.md — Copilot CLI skills (generated)
     codex/agentflow-*/SKILL.md   — Codex CLI skills (generated)
+    kimi/agentflow-*/SKILL.md    — Kimi Code CLI skills (generated)
     embed.go                     — embeds all skills into the binary; go:generate lives here
   docs/
     DECISIONS.md                 — design decisions log

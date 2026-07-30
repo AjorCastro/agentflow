@@ -9,5 +9,5 @@ import "embed"
 
 //go:generate go run ../cmd/gen-skills
 
-//go:embed *.md copilot codex
+//go:embed *.md copilot codex kimi
 var FS embed.FS
