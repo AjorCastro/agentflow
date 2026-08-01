@@ -21,6 +21,8 @@ var allSkills = []skillgen.SkillDef{
 	skillgen.SetupSkill,
 	skillgen.TurnSkill,
 	skillgen.CloseSkill,
+	skillgen.LocalControllerSkill,
+	skillgen.LocalCoderSkill,
 }
 
 func main() {
