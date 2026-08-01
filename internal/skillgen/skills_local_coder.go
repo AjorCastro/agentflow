@@ -30,7 +30,8 @@ var LocalCoderSkill = SkillDef{
 		},
 		{
 			Title: "Investigate, plan, implement, test",
-			Body:  "Do the work described in `task.md`, following whatever policies `POLICY.md` documents (validation gates, commit conventions, scope constraints). Use `git` normally for the actual code — branch, commits — local mode only changes the coordination channel, not how code is versioned.",
+			Body: "Do the work described in `task.md`, following whatever policies `POLICY.md` documents (validation gates, commit conventions, scope constraints). Use `git` normally for the actual code — branch, commits — local mode only changes the coordination channel, not how code is versioned.\n\n" +
+				"Whenever the task requires open-ended exploration (reading unfamiliar code across several files, running an experiment just to learn a fact, searching for where something is defined) — delegate that to a sub-agent instead of doing it in this session directly. Ask it a specific question and have it report back a short, structured answer with file:line references or concrete evidence, not full file dumps. This keeps this session's own context small, which is the entire point of local mode's per-task session model — reading through half the codebase yourself defeats it just as surely as re-reading old conversation history would.",
 		},
 		{
 			Title: "Write result.md",
@@ -54,6 +55,7 @@ var LocalCoderSkill = SkillDef{
 		"Never read history/ or runtime/ under .agentflow/local/<feature-id>/.",
 		"Never rely on memory of a previous task's session — only on what's written in POLICY.md/checkpoint.md/task.md.",
 		"Never skip writing result.md, even if the task failed or was blocked.",
+		"Never do open-ended exploration inline when a sub-agent could do it and report back a short answer instead.",
 	},
 
 	SuccessCriteria: []string{
