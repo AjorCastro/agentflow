@@ -97,11 +97,29 @@ func runClose(opts *closeOptions) error {
 		}
 	}
 
+	featureID := protocol.FeatureIDFromBranch(opts.branch)
+
+	// Remove the local-mode coordination folder, if present. It is
+	// gitignored scratch state (see internal/protocol.DefaultLocalPath), so
+	// it never gets committed and is never cleaned up by branch/worktree
+	// operations alone. `git worktree remove` already deletes it when it
+	// was created inside a dedicated worktree (verified empirically: it
+	// removes the whole worktree directory tree including gitignored
+	// subdirectories), but local mode can also be initialized directly on
+	// a repo checkout with no dedicated worktree, in which case nothing
+	// else would ever remove it.
+	localDir := protocol.DefaultLocalPath(repoAbs, featureID)
+	if _, err := os.Stat(localDir); err == nil {
+		fmt.Printf("Removing local-mode coordination folder %s ...\n", localDir)
+		if err := os.RemoveAll(localDir); err != nil {
+			return fmt.Errorf("removing %s: %w", localDir, err)
+		}
+	}
+
 	// Remove the merged exchange folder from the root branch, if present.
 	// The feature branch carries .agentflow/features/<feature-id>/ as regular
 	// tracked files, so merging it into root leaves that folder behind —
 	// deleting the worktree and the branch alone does not clean it up.
-	featureID := protocol.FeatureIDFromBranch(opts.branch)
 	exchangeRel := filepath.Join(".agentflow", "features", featureID)
 	exchangeAbs := filepath.Join(repoAbs, exchangeRel)
 
