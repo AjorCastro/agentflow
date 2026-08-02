@@ -24,6 +24,44 @@ func newLocalCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "local",
 		Short: "Local mode: coordinate Controller and Coder via files instead of GitHub",
+		Long: `Local mode coordinates two agent sessions — a Controller (talks to you,
+assigns tasks, reviews results, never writes code) and a Coder (investigates,
+implements, tests) — through a handful of small files instead of a GitHub
+exchange folder. See docs/LOCAL-MODE-GUIDE.md for the full walkthrough.
+
+Quick start:
+
+  1. Create the feature normally:
+       git worktree add .worktrees/<name> -b feature/<name> develop
+       cd .worktrees/<name>
+
+  2. Create the coordination folder:
+       agentflow local init --feature <name> --branch feature/<name> --worktree .worktrees/<name>
+
+  3. Edit .agentflow/local/<name>/POLICY.md by hand (validation gate, commit
+     conventions) — it's written once, not through a command.
+
+  4. In one session, act as Controller (invoke the agentflow-local-controller
+     skill) and write the first task:
+       agentflow local task --feature <name> <<'EOF'
+       ...
+       EOF
+
+  5. In a second, independent session opened in the same worktree, act as
+     Coder (invoke the agentflow-local-coder skill). It loads only
+     POLICY.md+checkpoint.md+task.md via:
+       agentflow local context --feature <name> --role coder
+     and reports back with:
+       agentflow local result --feature <name> <<'EOF' ... EOF
+
+  6. Back in the Controller session (or a fresh one), review result.md,
+     assign the next task or close the feature. Check progress any time
+     with:
+       agentflow local status --feature <name>
+
+  7. When the feature is merged, close it exactly like GitHub mode:
+       agentflow close --branch feature/<name> --root develop
+     This also removes .agentflow/local/<name>/ — nothing to clean up by hand.`,
 	}
 
 	cmd.AddCommand(newLocalInitCmd())
