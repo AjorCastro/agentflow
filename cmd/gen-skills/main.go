@@ -1,4 +1,4 @@
-// Command gen-skills writes the 36 AgentFlow skill files (9 skills × 4 agent
+// Command gen-skills writes the 45 AgentFlow skill files (9 skills × 5 agent
 // flavors) from internal/skillgen's SkillDefs, into the exact paths that
 // skills/embed.go already embeds. Run via `go generate ./...` from the repo
 // root, or directly with `go run ./cmd/gen-skills [output-dir]`.
@@ -47,9 +47,12 @@ func main() {
 		if err := writeFile(filepath.Join(outDir, "kimi", def.Name, "SKILL.md"), skillgen.Render(def, skillgen.FlavorKimi)); err != nil {
 			fail(err)
 		}
+		if err := writeFile(filepath.Join(outDir, "opencode", def.Name, "SKILL.md"), skillgen.Render(def, skillgen.FlavorOpenCode)); err != nil {
+			fail(err)
+		}
 	}
 
-	fmt.Printf("Generated %d skill files (%d skills x 4 flavors) in %s\n", len(allSkills)*4, len(allSkills), outDir)
+	fmt.Printf("Generated %d skill files (%d skills x 5 flavors) in %s\n", len(allSkills)*5, len(allSkills), outDir)
 }
 
 func writeFile(path, content string) error {

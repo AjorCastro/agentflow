@@ -21,7 +21,7 @@ func newInstallSkillsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&agent, "agent", "claude", "Target agent: claude, copilot, codex, kimi")
+	cmd.Flags().StringVar(&agent, "agent", "claude", "Target agent: claude, copilot, codex, kimi, opencode")
 
 	return cmd
 }
@@ -36,8 +36,10 @@ func runInstallSkills(agent string) error {
 		return installCodexSkills()
 	case "kimi":
 		return installKimiSkills()
+	case "opencode":
+		return installOpenCodeSkills()
 	default:
-		return fmt.Errorf("unknown agent %q — supported: claude, copilot, codex, kimi", agent)
+		return fmt.Errorf("unknown agent %q — supported: claude, copilot, codex, kimi, opencode", agent)
 	}
 }
 
@@ -112,6 +114,17 @@ func installKimiSkills() error {
 	}
 	target := filepath.Join(kimiHome, "skills")
 	return installSkillFolders("kimi", target, "Kimi Code CLI", "invoke with /skill:<name>, e.g. /skill:agentflow-turn")
+}
+
+// installOpenCodeSkills copies opencode/<skill>/ folders to
+// ~/.config/opencode/skills/ — OpenCode's native global Agent Skills
+// directory (no environment variable override is documented for it, unlike
+// Codex's $CODEX_HOME or Kimi's $KIMI_CODE_HOME). Unlike the other agents'
+// skills, OpenCode's Agent Skills are not user-typed slash commands: the
+// model loads one on demand, guided by its `description` frontmatter.
+func installOpenCodeSkills() error {
+	target := filepath.Join(os.Getenv("HOME"), ".config", "opencode", "skills")
+	return installSkillFolders("opencode", target, "OpenCode", "these are Agent Skills: the model loads them on demand, there is no /<name> to type")
 }
 
 // installSkillFolders copies embedded <srcDir>/<skill>/ folders to target.

@@ -19,6 +19,7 @@ const (
 	FlavorCodex
 	FlavorCopilot
 	FlavorKimi
+	FlavorOpenCode
 )
 
 // Step is one numbered (or sub-headed) unit of a skill's instructions.
@@ -109,6 +110,8 @@ func (f Flavor) agentName() string {
 		return "Copilot CLI"
 	case FlavorKimi:
 		return "Kimi Code CLI"
+	case FlavorOpenCode:
+		return "OpenCode"
 	default:
 		return "Claude Code"
 	}
@@ -122,6 +125,8 @@ func (f Flavor) handoffSlug() string {
 		return "copilot-cli"
 	case FlavorKimi:
 		return "kimi-cli"
+	case FlavorOpenCode:
+		return "opencode"
 	default:
 		return "claude-code"
 	}
@@ -134,11 +139,12 @@ func (f Flavor) handoffSlug() string {
 func Render(def SkillDef, flavor Flavor) string {
 	var out string
 	switch flavor {
-	case FlavorCodex, FlavorKimi:
-		// Kimi Code CLI's SKILL.md convention (folder + SKILL.md, YAML
-		// frontmatter with name/description, name limited to lowercase
-		// letters/numbers/hyphens) is identical to Codex's, so it reuses the
-		// same renderer rather than duplicating it.
+	case FlavorCodex, FlavorKimi, FlavorOpenCode:
+		// Kimi Code CLI's and OpenCode's Agent Skills SKILL.md convention
+		// (folder + SKILL.md, YAML frontmatter with name/description, name
+		// limited to lowercase letters/numbers/hyphens matching the folder
+		// name) is identical to Codex's, so they reuse the same renderer
+		// rather than duplicating it.
 		out = renderCodex(def)
 	case FlavorCopilot:
 		out = renderCopilot(def)

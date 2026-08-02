@@ -25,6 +25,8 @@ func TestGeneratedFilesAreFresh(t *testing.T) {
 		{FlavorClaude, func(name string) string { return filepath.Join(repoRoot, "skills", name+".md") }},
 		{FlavorCodex, func(name string) string { return filepath.Join(repoRoot, "skills", "codex", name, "SKILL.md") }},
 		{FlavorCopilot, func(name string) string { return filepath.Join(repoRoot, "skills", "copilot", name, "SKILL.md") }},
+		{FlavorKimi, func(name string) string { return filepath.Join(repoRoot, "skills", "kimi", name, "SKILL.md") }},
+		{FlavorOpenCode, func(name string) string { return filepath.Join(repoRoot, "skills", "opencode", name, "SKILL.md") }},
 	}
 
 	for _, def := range allSkillsForTest {
