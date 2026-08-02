@@ -1,4 +1,4 @@
-// Command gen-skills writes the 16 AgentFlow skill files (4 skills × 4 agent
+// Command gen-skills writes the 36 AgentFlow skill files (9 skills × 4 agent
 // flavors) from internal/skillgen's SkillDefs, into the exact paths that
 // skills/embed.go already embeds. Run via `go generate ./...` from the repo
 // root, or directly with `go run ./cmd/gen-skills [output-dir]`.
@@ -21,8 +21,11 @@ var allSkills = []skillgen.SkillDef{
 	skillgen.SetupSkill,
 	skillgen.TurnSkill,
 	skillgen.CloseSkill,
-	skillgen.LocalControllerSkill,
-	skillgen.LocalCoderSkill,
+	skillgen.LocalInitSkill,
+	skillgen.LocalResumeSkill,
+	skillgen.LocalCoderInitSkill,
+	skillgen.LocalCoderResumeSkill,
+	skillgen.LocalPauseSkill,
 }
 
 func main() {

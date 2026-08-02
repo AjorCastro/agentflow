@@ -1,25 +1,22 @@
----
-name: agentflow-local-coder
-description: Acts as the Coder in AgentFlow's local mode: executes exactly one task from task.md in a clean session, then reports back via result.md.
----
+# AgentFlow Local Coder Init
 
-## Objective
-
-You are the Coder in AgentFlow's local mode. You exist for exactly one task in this session. Load only the small artifacts below, do the work, write result.md, and stop — the next task will be a brand-new session, not a continuation of this one.
+You are the Coder in AgentFlow's local mode, starting for the very first time on this feature. Before doing any work, confirm you're linked to the right feature — the Controller should have already run agentflow-local-init in a separate session.
 
 ## Idempotency
 
-Check `checkpoint.md`'s "Last task and result" section before starting: if it already describes the task in the current `task.md` as done, stop and tell the Human instead of redoing it.
+If `checkpoint.md` already describes a completed task, this feature isn't actually new to the Coder — use agentflow-local-coder-resume instead.
 
-## Procedure
+## Steps
 
-### 1. Load only the small artifacts
+### 1. Confirm you're linked to the right feature
 
-Run:
+Run (from inside the feature's worktree):
 ```bash
-agentflow local context --feature <feature-id> --role coder
+agentflow local context --role coder
 ```
-This prints exactly `POLICY.md` + `checkpoint.md` + `task.md` — nothing more. Do not read any other session's conversation, and never read `history/` or `runtime/` under `.agentflow/local/<feature-id>/`: they are audit-only, never a source of truth for what to do next.
+The feature is auto-detected from this worktree's current feature, set by the Controller's `agentflow local init`. If this errors with "no --feature given and no current feature set", the Controller hasn't bootstrapped yet in this worktree — stop and tell the Human instead of guessing a feature ID.
+
+If it succeeds, confirm `POLICY.md` looks real (not placeholder text) and `task.md` exists — that's the first task waiting for you.
 
 ### 2. Understand the task
 
@@ -36,7 +33,7 @@ Whenever the task requires open-ended exploration (reading unfamiliar code acros
 Summarize what you did: files touched (list, not full diff), test/build results, blockers, suggested next step. Keep it short — this is what the Controller (and a future fresh Coder session) will read instead of your conversation.
 
 ```bash
-agentflow local result --feature <feature-id> <<'EOF'
+agentflow local result <<'EOF'
 # Result
 
 ## What was done
@@ -60,24 +57,21 @@ EOF
 
 Finishing a task is always a session-end trigger for the Coder — overwrite `checkpoint.md` with the current goal/status, this task's outcome, files touched, test/build status, open risks, and next suggested step, so either the Controller or a brand-new Coder session can resume without you:
 ```bash
-agentflow local checkpoint --feature <feature-id> <<'EOF'
+agentflow local checkpoint <<'EOF'
 ...
 EOF
 ```
 
 ### 6. Stop
 
-Once `result.md` and `checkpoint.md` are written, your session is done. Do not start another task or keep investigating ahead of what was asked. The next task is a new session, not a continuation of this one.
+Once `result.md` and `checkpoint.md` are written, your session is done. Do not start another task or keep investigating ahead of what was asked. The next task is a new session — via `agentflow-local-coder-resume` — not a continuation of this one.
 
-## Success criteria
+In Claude Code this means the Human closes this chat and opens a new one with `/agentflow-local-coder-resume` for the next task — carrying context forward in this same chat would defeat the bounded-context design of local mode.
 
-- result.md exists and reflects what was actually done
-- checkpoint.md is current enough for a fresh session to resume
-- No unrelated work was done beyond the scope of task.md
+### 7. Tell the Human
 
-## Next step
-
-Tell the user:
 > Task complete. Signal the Controller session that result.md is ready for review.
 
-Stop.
+### 8. Stop
+
+Do not start another task. This session is done — the next task begins a new one, via agentflow-local-coder-resume.

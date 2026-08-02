@@ -708,3 +708,83 @@ func TestLocalContext_InvalidRole(t *testing.T) {
 		t.Errorf("expected error to mention both valid roles, got: %v", err)
 	}
 }
+
+func TestLocalInit_RecordsCurrentFeature(t *testing.T) {
+	repo := newGitRepo(t)
+	initLocal(t, repo, "auto-linked")
+
+	repoAbs, err := filepath.Abs(repo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := protocol.ReadCurrentFeature(repoAbs)
+	if err != nil {
+		t.Fatalf("reading current feature: %v", err)
+	}
+	if got != "auto-linked" {
+		t.Errorf("expected current feature %q, got %q", "auto-linked", got)
+	}
+}
+
+func TestLocalRoundFile_FallsBackToCurrentFeature(t *testing.T) {
+	repo := newGitRepo(t)
+	initLocal(t, repo, "auto-linked")
+
+	cmd := newLocalTaskCmd()
+	cmd.SetArgs([]string{"--repo", repo}) // no --feature
+	withStdin(t, "# Task\nauto-linked feature\n", func() {
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("task without --feature failed: %v", err)
+		}
+	})
+
+	got, err := os.ReadFile(filepath.Join(repo, ".agentflow", "local", "auto-linked", "task.md"))
+	if err != nil {
+		t.Fatalf("reading task.md: %v", err)
+	}
+	if !strings.Contains(string(got), "auto-linked feature") {
+		t.Errorf("task.md missing expected content, got:\n%s", got)
+	}
+}
+
+func TestLocalRoundFile_ExplicitFeatureOverridesCurrent(t *testing.T) {
+	repo := newGitRepo(t)
+	initLocal(t, repo, "feature-a")
+	initLocal(t, repo, "feature-b") // becomes the current feature
+
+	cmd := newLocalTaskCmd()
+	cmd.SetArgs([]string{"--repo", repo, "--feature", "feature-a"})
+	withStdin(t, "for feature-a\n", func() {
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("task with explicit --feature failed: %v", err)
+		}
+	})
+
+	if _, err := os.Stat(filepath.Join(repo, ".agentflow", "local", "feature-b", "task.md")); err == nil {
+		t.Error("task.md should not have been written under the current (feature-b), unrelated feature")
+	}
+	got, err := os.ReadFile(filepath.Join(repo, ".agentflow", "local", "feature-a", "task.md"))
+	if err != nil {
+		t.Fatalf("reading task.md: %v", err)
+	}
+	if !strings.Contains(string(got), "for feature-a") {
+		t.Errorf("task.md missing expected content, got:\n%s", got)
+	}
+}
+
+func TestLocalRoundFile_FailsWithoutFeatureOrCurrent(t *testing.T) {
+	repo := newGitRepo(t) // no `local init` ever run, so no current feature
+
+	cmd := newLocalTaskCmd()
+	cmd.SetArgs([]string{"--repo", repo})
+	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
+
+	withStdin(t, "content\n", func() {
+		if err := cmd.Execute(); err == nil {
+			t.Fatal("expected error when neither --feature nor a current feature is set")
+		} else if !strings.Contains(err.Error(), "no --feature given") {
+			t.Errorf("expected 'no --feature given' error, got: %v", err)
+		}
+	})
+}

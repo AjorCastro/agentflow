@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -62,6 +63,39 @@ func FindLocalFolders(root string) ([]string, error) {
 // GitHub-based exchange folder.
 func DefaultLocalPath(repoDir, featureID string) string {
 	return filepath.Join(repoDir, ".agentflow", "local", featureID)
+}
+
+// CurrentFeaturePath returns the path to the marker file that records which
+// feature ID is "current" for a worktree — written by `agentflow local
+// init`, read by every other `agentflow local` subcommand so the Human
+// never has to pass --feature by hand once a feature is bootstrapped in a
+// given worktree. Lives alongside the per-feature folders it points at, so
+// it is excluded from Git by the same `.agentflow/local/` .gitignore entry.
+func CurrentFeaturePath(repoDir string) string {
+	return filepath.Join(repoDir, ".agentflow", "local", "CURRENT")
+}
+
+// WriteCurrentFeature records featureID as the current feature for repoDir.
+func WriteCurrentFeature(repoDir, featureID string) error {
+	path := CurrentFeaturePath(repoDir)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(path, []byte(featureID+"\n"), 0644)
+}
+
+// ReadCurrentFeature returns the feature ID last recorded by
+// WriteCurrentFeature for repoDir, or an error if none was ever set.
+func ReadCurrentFeature(repoDir string) (string, error) {
+	data, err := os.ReadFile(CurrentFeaturePath(repoDir))
+	if err != nil {
+		return "", err
+	}
+	featureID := strings.TrimSpace(string(data))
+	if featureID == "" {
+		return "", fmt.Errorf("%s is empty", CurrentFeaturePath(repoDir))
+	}
+	return featureID, nil
 }
 
 // PolicyMD returns the initial content for POLICY.md: stable policies and

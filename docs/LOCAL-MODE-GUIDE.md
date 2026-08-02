@@ -21,6 +21,21 @@ walkthrough; those documents are authoritative if anything here conflicts.
 Controller and Coder are separate **sessions**, not one calling the other.
 Turn-taking is manual: the Human tells each session when it's their turn.
 
+## The five skills
+
+Each role has an **init** skill (run once per feature) and a **resume**
+skill (run for every session after that, including forced restarts). A
+fifth skill, **pause**, is shared by both roles for stopping safely off a
+natural milestone.
+
+| Skill | Role | When |
+|---|---|---|
+| `agentflow-local-init` | Controller | Once, right after the Human decides in conversation that a feature will start. Bootstraps the worktree, `.agentflow/local/<id>/`, `POLICY.md`, and the first task. |
+| `agentflow-local-coder-init` | Coder | Once, right after the Controller's bootstrap — confirms the link, then does the first task. |
+| `agentflow-local-resume` | Controller | Every session after the first — including after the Controller's own session restarts mid-feature. |
+| `agentflow-local-coder-resume` | Coder | Every task after the first — the Coder always starts a clean session per task, by design. |
+| `agentflow-local-pause` | Either | When the Human needs to stop a session for a reason unrelated to task/plan completion (end of day, an interruption), so the next resume doesn't start blind. |
+
 ## Core rule
 
 The Coder starts a **clean session per task** — it never continues a prior
@@ -30,6 +45,16 @@ deliberation, after a plan approval, after the Human redirects the goal, or
 whenever its context has grown large — see `OUTCOME.md` §16 for the full
 list. In every case, everything needed to resume must already be on disk
 before the session ends.
+
+## Auto-linking: no more copying feature IDs between sessions
+
+`agentflow local init` records the feature ID as this **worktree's current
+feature** (`.agentflow/local/CURRENT`). Every other `agentflow local`
+subcommand — `task`, `result`, `checkpoint`, `discuss`, `status`,
+`context` — falls back to that marker when `--feature` is omitted. Since
+Controller and Coder always run in the same worktree, neither session needs
+to be told the feature ID by hand; pass `--feature <id>` explicitly only if
+you need to target a different feature than the current one.
 
 ## The files
 
@@ -53,61 +78,59 @@ files touched, test/build state, open risks, next suggested step.
 
 ## Quick start
 
-1. Create the feature normally:
-   ```
-   git worktree add .worktrees/<name> -b feature/<name> develop
-   cd .worktrees/<name>
-   ```
-
-2. Create the coordination folder:
+1. Decide the feature with the Human, then bootstrap it: in a Controller
+   session, invoke the `agentflow-local-init` skill. It creates the
+   worktree if it doesn't exist yet, runs:
    ```
    agentflow local init --feature <name> --branch feature/<name> --worktree .worktrees/<name>
    ```
-   This writes `POLICY.md` and an empty `checkpoint.md`.
+   drafts `POLICY.md` with you (validation gate, commit conventions), and
+   writes the first `task.md`.
 
-3. Edit `.agentflow/local/<name>/POLICY.md` by hand — it's written once, not
-   through a command. Fill in the validation gate (equivalent to what
-   `AGENTS.md`/`CONTRIBUTING.md` would define for GitHub mode) and any
-   commit or scope conventions.
-
-4. In one session, invoke the `agentflow-local-controller` skill. It talks
-   to you, decides the first task, and writes it:
+2. In a second, independent session opened in the same worktree, invoke the
+   `agentflow-local-coder-init` skill. It confirms the link and loads
+   exactly `POLICY.md` + `checkpoint.md` + `task.md` via:
    ```
-   agentflow local task --feature <name> <<'EOF'
-   ...
-   EOF
-   ```
-
-5. In a second, independent session opened in the same worktree, invoke the
-   `agentflow-local-coder` skill. It loads exactly `POLICY.md` +
-   `checkpoint.md` + `task.md` via:
-   ```
-   agentflow local context --feature <name> --role coder
+   agentflow local context --role coder
    ```
    investigates, plans, implements, tests, then reports back:
    ```
-   agentflow local result --feature <name> <<'EOF'
+   agentflow local result <<'EOF'
    ...
    EOF
    ```
    and writes/overwrites `checkpoint.md` (end of task is a mandatory
    checkpoint). This session then ends — the next task is a fresh Coder
-   session, never a continuation.
+   session (`agentflow-local-coder-resume`), never a continuation.
 
-6. Back in the Controller session (or a fresh one if a restart trigger
-   fired), review `result.md`, discuss with the Human, and either assign the
-   next task (back to step 4) or close the feature. Check progress any time
-   with:
+3. Back in the Controller session — or a fresh one via `agentflow-local-resume`
+   if a restart trigger fired — review `result.md`, discuss with the Human,
+   and either assign the next task or close the feature. Check progress any
+   time with:
    ```
-   agentflow local status --feature <name>
+   agentflow local status
    ```
 
-7. If a decision needs real deliberation with the Human, isolate it instead
+4. From here on, every session uses the **resume** skills, not the **init**
+   ones: `agentflow-local-resume` for the Controller, `agentflow-local-coder-resume`
+   for the Coder's next task. The Controller restarts its session (fresh
+   `agentflow-local-resume` invocation) after closing a deliberation,
+   approving a plan, or when the Human redirects the goal — recovering
+   purely from `POLICY.md`+`checkpoint.md`+`task.md`+`result.md`, never from
+   replaying the conversation.
+
+5. If the Human needs to interrupt a session for a reason unrelated to a
+   natural milestone (end of day, an unplanned interruption), invoke
+   `agentflow-local-pause` first. It writes a partial `checkpoint.md`
+   describing in-progress work before the session ends, so the next
+   `-resume` doesn't start blind.
+
+6. If a decision needs real deliberation with the Human, isolate it instead
    of letting it grow the Controller's working context indefinitely:
    ```
-   agentflow local discuss start --feature <name>
+   agentflow local discuss start
    # ... deliberate ...
-   agentflow local discuss close --feature <name> --id 001 <<'EOF'
+   agentflow local discuss close --id 001 <<'EOF'
    ...
    EOF
    ```
@@ -115,7 +138,7 @@ files touched, test/build state, open risks, next suggested step.
    session recovers from `OUTCOME.md` + `checkpoint.md` alone, not from
    replaying the deliberation.
 
-8. When the feature is merged, close it exactly like GitHub mode:
+7. When the feature is merged, close it exactly like GitHub mode:
    ```
    agentflow close --branch feature/<name> --root develop
    ```
@@ -132,10 +155,18 @@ participate via a browser-based AI with GitHub access.
 
 ## Status
 
-Local mode is a working prototype (v0), validated once end-to-end on a real
-feature (`.agentflow-local/discussions/001/RUN-001.md`). Confirmed:
-`checkpoint.md`+`task.md`+`result.md` were sufficient for a fresh Coder
-session to act without extra context, and `agentflow close` cleans up the
-local folder correctly. Not yet validated: a forced Controller session
-restart mid-feature, a real human deliberation closed with `discuss close`,
-and the token-cost savings hypothesis that motivated this mode.
+Local mode is a working prototype, validated twice end-to-end on real
+features:
+
+- `.agentflow-local/discussions/001/RUN-001.md`: confirmed
+  `checkpoint.md`+`task.md`+`result.md` are sufficient for a fresh Coder
+  session to act without extra context, and that `agentflow close` cleans up
+  the local folder correctly.
+- `.agentflow-local/discussions/001/RUN-002.md`: confirmed a forced
+  Controller session restart mid-feature recovers correctly from
+  `POLICY.md`+`checkpoint.md`+`task.md`+`result.md` alone, twice in a row,
+  with no human re-explanation needed.
+
+Not yet validated: a real human deliberation closed with `discuss close`,
+the `agentflow-local-pause` skill in an actual interrupted session, and the
+token-cost savings hypothesis that motivated this mode in the first place.

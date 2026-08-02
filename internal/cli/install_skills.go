@@ -76,8 +76,11 @@ func installClaudeSkills() error {
 	fmt.Println("  /agentflow-init    — initialize workspace from agentflow-init-*.md")
 	fmt.Println("  /agentflow-turn    — execute the CLI Agent's turn")
 	fmt.Println("  /agentflow-close   — clean up after merge")
-	fmt.Println("  /agentflow-local-controller — act as Controller in local mode")
-	fmt.Println("  /agentflow-local-coder      — act as Coder in local mode")
+	fmt.Println("  /agentflow-local-init         — bootstrap a new local-mode feature (Controller)")
+	fmt.Println("  /agentflow-local-resume       — resume as Controller in local mode")
+	fmt.Println("  /agentflow-local-coder-init   — link a new Coder session to a feature")
+	fmt.Println("  /agentflow-local-coder-resume — resume as Coder in local mode")
+	fmt.Println("  /agentflow-local-pause        — safely pause a Controller/Coder session mid-work")
 	return nil
 }
 
@@ -166,7 +169,10 @@ func installSkillFolders(srcDir, target, agentLabel, hint string) error {
 	fmt.Println("  agentflow-init    — initialize workspace from agentflow-init-*.md")
 	fmt.Println("  agentflow-turn    — execute the CLI Agent's turn")
 	fmt.Println("  agentflow-close   — clean up after merge")
-	fmt.Println("  agentflow-local-controller — act as Controller in local mode")
-	fmt.Println("  agentflow-local-coder      — act as Coder in local mode")
+	fmt.Println("  agentflow-local-init         — bootstrap a new local-mode feature (Controller)")
+	fmt.Println("  agentflow-local-resume       — resume as Controller in local mode")
+	fmt.Println("  agentflow-local-coder-init   — link a new Coder session to a feature")
+	fmt.Println("  agentflow-local-coder-resume — resume as Coder in local mode")
+	fmt.Println("  agentflow-local-pause        — safely pause a Controller/Coder session mid-work")
 	return nil
 }

@@ -1,13 +1,13 @@
 ---
-name: agentflow-local-coder
-description: Acts as the Coder in AgentFlow's local mode: starts a clean session for exactly one task assigned by the Controller, investigates, plans, implements, tests, and reports back — then the session ends. Use when the user says it's the Coder's turn, points at a task.md to execute, or asks you to act as the Coder in local mode. Trigger phrases include "act as Coder", "agentflow local coder", "execute the task", "it's your turn" (in a local-mode context).
+name: agentflow-local-coder-init
+description: Links a new Coder session to a feature the Controller just bootstrapped with agentflow-local-init, confirms the link, then executes the first task. Use exactly once per feature, right after the Human opens this session per the Controller's instructions. Trigger phrases include "link as Coder", "agentflow local coder init", "start the Coder for this feature".
 ---
 
-# AgentFlow Local Coder
+# AgentFlow Local Coder Init
 
 ## Core Workflow
 
-1. Load only the small artifacts
+1. Confirm you're linked to the right feature
 2. Understand the task
 3. Investigate, plan, implement, test
 4. Write result.md
@@ -16,17 +16,19 @@ description: Acts as the Coder in AgentFlow's local mode: starts a clean session
 
 ## Idempotency
 
-Check `checkpoint.md`'s "Last task and result" section before starting: if it already describes the task in the current `task.md` as done, stop and tell the Human instead of redoing it.
+If `checkpoint.md` already describes a completed task, this feature isn't actually new to the Coder — use agentflow-local-coder-resume instead.
 
 ## Step Detail
 
-### Load only the small artifacts
+### Confirm you're linked to the right feature
 
-Run:
+Run (from inside the feature's worktree):
 ```bash
-agentflow local context --feature <feature-id> --role coder
+agentflow local context --role coder
 ```
-This prints exactly `POLICY.md` + `checkpoint.md` + `task.md` — nothing more. Do not read any other session's conversation, and never read `history/` or `runtime/` under `.agentflow/local/<feature-id>/`: they are audit-only, never a source of truth for what to do next.
+The feature is auto-detected from this worktree's current feature, set by the Controller's `agentflow local init`. If this errors with "no --feature given and no current feature set", the Controller hasn't bootstrapped yet in this worktree — stop and tell the Human instead of guessing a feature ID.
+
+If it succeeds, confirm `POLICY.md` looks real (not placeholder text) and `task.md` exists — that's the first task waiting for you.
 
 ### Understand the task
 
@@ -43,7 +45,7 @@ Whenever the task requires open-ended exploration (reading unfamiliar code acros
 Summarize what you did: files touched (list, not full diff), test/build results, blockers, suggested next step. Keep it short — this is what the Controller (and a future fresh Coder session) will read instead of your conversation.
 
 ```bash
-agentflow local result --feature <feature-id> <<'EOF'
+agentflow local result <<'EOF'
 # Result
 
 ## What was done
@@ -67,14 +69,14 @@ EOF
 
 Finishing a task is always a session-end trigger for the Coder — overwrite `checkpoint.md` with the current goal/status, this task's outcome, files touched, test/build status, open risks, and next suggested step, so either the Controller or a brand-new Coder session can resume without you:
 ```bash
-agentflow local checkpoint --feature <feature-id> <<'EOF'
+agentflow local checkpoint <<'EOF'
 ...
 EOF
 ```
 
 ### Stop
 
-Once `result.md` and `checkpoint.md` are written, your session is done. Do not start another task or keep investigating ahead of what was asked. The next task is a new session, not a continuation of this one.
+Once `result.md` and `checkpoint.md` are written, your session is done. Do not start another task or keep investigating ahead of what was asked. The next task is a new session — via `agentflow-local-coder-resume` — not a continuation of this one.
 
 ## Constraints
 
@@ -86,6 +88,7 @@ Once `result.md` and `checkpoint.md` are written, your session is done. Do not s
 
 ## Success Criteria
 
+- Confirmed the link to the correct feature before doing any work
 - result.md exists and reflects what was actually done
 - checkpoint.md is current enough for a fresh session to resume
 - No unrelated work was done beyond the scope of task.md

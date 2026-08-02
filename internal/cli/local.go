@@ -29,37 +29,38 @@ assigns tasks, reviews results, never writes code) and a Coder (investigates,
 implements, tests) — through a handful of small files instead of a GitHub
 exchange folder. See docs/LOCAL-MODE-GUIDE.md for the full walkthrough.
 
+Once a feature is bootstrapped, every command below auto-detects which
+feature you mean from this worktree's current feature (set by
+'agentflow local init') — --feature is only needed to target a different one.
+
 Quick start:
 
-  1. Create the feature normally:
-       git worktree add .worktrees/<name> -b feature/<name> develop
-       cd .worktrees/<name>
-
-  2. Create the coordination folder:
+  1. Decide the feature with the Human, then bootstrap it — in a Controller
+     session, invoke the agentflow-local-init skill. It creates the worktree
+     if needed, runs 'agentflow local init', drafts POLICY.md with you, and
+     writes the first task.md:
        agentflow local init --feature <name> --branch feature/<name> --worktree .worktrees/<name>
 
-  3. Edit .agentflow/local/<name>/POLICY.md by hand (validation gate, commit
-     conventions) — it's written once, not through a command.
+  2. In a second, independent session opened in the same worktree, invoke
+     the agentflow-local-coder-init skill. It confirms the link and loads
+     only POLICY.md+checkpoint.md+task.md via:
+       agentflow local context --role coder
+     then reports back with:
+       agentflow local result <<'EOF' ... EOF
 
-  4. In one session, act as Controller (invoke the agentflow-local-controller
-     skill) and write the first task:
-       agentflow local task --feature <name> <<'EOF'
-       ...
-       EOF
+  3. Back in the Controller session, review result.md, assign the next task
+     or close the feature. Check progress any time with:
+       agentflow local status
 
-  5. In a second, independent session opened in the same worktree, act as
-     Coder (invoke the agentflow-local-coder skill). It loads only
-     POLICY.md+checkpoint.md+task.md via:
-       agentflow local context --feature <name> --role coder
-     and reports back with:
-       agentflow local result --feature <name> <<'EOF' ... EOF
+  4. For every session after the first one, use agentflow-local-resume
+     (Controller) or agentflow-local-coder-resume (Coder) instead of the
+     -init skills — including after a forced session restart mid-feature.
 
-  6. Back in the Controller session (or a fresh one), review result.md,
-     assign the next task or close the feature. Check progress any time
-     with:
-       agentflow local status --feature <name>
+  5. If the Human needs to interrupt a session off a natural milestone (end
+     of day, an unrelated interruption), use the agentflow-local-pause skill
+     first so the next resume doesn't start blind.
 
-  7. When the feature is merged, close it exactly like GitHub mode:
+  6. When the feature is merged, close it exactly like GitHub mode:
        agentflow close --branch feature/<name> --root develop
      This also removes .agentflow/local/<name>/ — nothing to clean up by hand.`,
 	}
@@ -75,12 +76,25 @@ Quick start:
 	return cmd
 }
 
-// resolveLocalDir returns the absolute local-mode coordination folder for
-// --repo/--feature, validating repo is a git repository.
-func resolveLocalDir(repo, feature string) (string, error) {
-	if feature == "" {
-		return "", fmt.Errorf("--feature is required")
+// resolveFeature returns the feature ID a command should operate on:
+// explicit if --feature was passed, otherwise whatever `agentflow local
+// init` last recorded as current for this worktree. This is what lets every
+// subcommand except `init` itself omit --feature once a feature exists.
+func resolveFeature(repoAbs, explicit string) (string, error) {
+	if explicit != "" {
+		return explicit, nil
 	}
+	current, err := protocol.ReadCurrentFeature(repoAbs)
+	if err != nil {
+		return "", fmt.Errorf("no --feature given and no current feature set in %s — pass --feature explicitly or run `agentflow local init` first", repoAbs)
+	}
+	return current, nil
+}
+
+// resolveLocalDir returns the absolute local-mode coordination folder for
+// --repo/--feature (or the worktree's current feature if --feature is
+// omitted), validating repo is a git repository.
+func resolveLocalDir(repo, feature string) (string, error) {
 	repoAbs, err := filepath.Abs(repo)
 	if err != nil {
 		return "", fmt.Errorf("invalid --repo path: %w", err)
@@ -88,7 +102,11 @@ func resolveLocalDir(repo, feature string) (string, error) {
 	if !gitops.IsGitRepo(repoAbs) {
 		return "", fmt.Errorf("%s is not a git repository", repoAbs)
 	}
-	return protocol.DefaultLocalPath(repoAbs, feature), nil
+	featureID, err := resolveFeature(repoAbs, feature)
+	if err != nil {
+		return "", err
+	}
+	return protocol.DefaultLocalPath(repoAbs, featureID), nil
 }
 
 // readContent returns the new content for a round-exchange file: from
@@ -165,7 +183,16 @@ func newLocalInitCmd() *cobra.Command {
 				}
 			}
 
+			repoAbs, err := filepath.Abs(repo)
+			if err != nil {
+				return fmt.Errorf("invalid --repo path: %w", err)
+			}
+			if err := protocol.WriteCurrentFeature(repoAbs, feature); err != nil {
+				return fmt.Errorf("recording current feature: %w", err)
+			}
+
 			fmt.Printf("Local-mode coordination folder created at %s\n", localDir)
+			fmt.Printf("%q recorded as the current feature for this worktree — every other `agentflow local` command here can now omit --feature.\n", feature)
 			fmt.Println("Add it to .gitignore if it isn't already covered by `.agentflow/local/`.")
 			return nil
 		},
@@ -214,9 +241,8 @@ func newLocalRoundFileCmd(use, filename, short string) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&repo, "repo", ".", "Path to the git repository")
-	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (required)")
+	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (default: this worktree's current feature, set by 'agentflow local init')")
 	cmd.Flags().StringVar(&file, "file", "", "Read content from this file instead of stdin")
-	_ = cmd.MarkFlagRequired("feature")
 
 	return cmd
 }
@@ -270,14 +296,17 @@ func newLocalDiscussStartCmd() *cobra.Command {
 
 			fmt.Printf("Discussion %s started at %s\n", id, dir)
 			fmt.Println("Deliberate with the Human, then close with:")
-			fmt.Printf("  agentflow local discuss close --repo %s --feature %s --id %s\n", repo, feature, id)
+			if feature != "" {
+				fmt.Printf("  agentflow local discuss close --repo %s --feature %s --id %s\n", repo, feature, id)
+			} else {
+				fmt.Printf("  agentflow local discuss close --repo %s --id %s\n", repo, id)
+			}
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVar(&repo, "repo", ".", "Path to the git repository")
-	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (required)")
-	_ = cmd.MarkFlagRequired("feature")
+	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (default: this worktree's current feature, set by 'agentflow local init')")
 
 	return cmd
 }
@@ -318,10 +347,9 @@ func newLocalDiscussCloseCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&repo, "repo", ".", "Path to the git repository")
-	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (required)")
+	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (default: this worktree's current feature, set by 'agentflow local init')")
 	cmd.Flags().StringVar(&id, "id", "", "Discussion ID (required)")
 	cmd.Flags().StringVar(&file, "file", "", "Read OUTCOME.md content from this file instead of stdin")
-	_ = cmd.MarkFlagRequired("feature")
 	_ = cmd.MarkFlagRequired("id")
 
 	return cmd
@@ -391,8 +419,7 @@ func newLocalStatusCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&repo, "repo", ".", "Path to the git repository")
-	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (required)")
-	_ = cmd.MarkFlagRequired("feature")
+	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (default: this worktree's current feature, set by 'agentflow local init')")
 
 	return cmd
 }
@@ -435,9 +462,8 @@ func newLocalContextCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&repo, "repo", ".", "Path to the git repository")
-	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (required)")
+	cmd.Flags().StringVar(&feature, "feature", "", "Feature ID (default: this worktree's current feature, set by 'agentflow local init')")
 	cmd.Flags().StringVar(&role, "role", "", "controller or coder (required)")
-	_ = cmd.MarkFlagRequired("feature")
 	_ = cmd.MarkFlagRequired("role")
 
 	return cmd

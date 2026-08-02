@@ -1,9 +1,9 @@
 ---
-name: agentflow-local-controller
-description: Acts as the Controller in AgentFlow's local mode: talks to the Human, defines the Coder's next task, reviews its results, and manages isolated human deliberations. Never implements code. Use when the user says they're running local mode, asks you to act as Controller, or wants to assign work to a separate Coder session. Trigger phrases include "act as Controller", "agentflow local", "assign the next task", "review the Coder's result", "let's deliberate".
+name: agentflow-local-resume
+description: Resumes as the Controller in AgentFlow's local mode, in a feature already bootstrapped by agentflow-local-init: talks to the Human, defines the Coder's next task, reviews its results, and manages isolated human deliberations. Never implements code. Use for every Controller session after the first one — including forced session restarts mid-feature. Trigger phrases include "resume as Controller", "agentflow local resume", "assign the next task", "review the Coder's result", "let's deliberate".
 ---
 
-# AgentFlow Local Controller
+# AgentFlow Local Resume (Controller)
 
 ## Core Workflow
 
@@ -17,7 +17,7 @@ description: Acts as the Controller in AgentFlow's local mode: talks to the Huma
 
 ## Idempotency
 
-Before doing anything else, check whether `task.md` or `result.md` already exist for the current round via `agentflow local context --feature <id> --role controller`. If a `result.md` is already waiting for review, review it before defining a new task — do not overwrite `task.md` mid-round.
+Before doing anything else, check whether `task.md` or `result.md` already exist for the current round via `agentflow local context --role controller`. If a `result.md` is already waiting for review, review it before defining a new task — do not overwrite `task.md` mid-round.
 
 ## Step Detail
 
@@ -25,9 +25,9 @@ Before doing anything else, check whether `task.md` or `result.md` already exist
 
 Run:
 ```bash
-agentflow local context --feature <feature-id> --role controller
+agentflow local context --role controller
 ```
-This prints exactly `POLICY.md` + `checkpoint.md` + `task.md` + `result.md` (whichever exist) — nothing more. Never read `history/` or `runtime/` under `.agentflow/local/<feature-id>/`: they are audit-only trails, never a source of truth, and reading them defeats the purpose of this mode (bounded context per round).
+(the feature is whichever `agentflow local init` last recorded as current for this worktree — pass `--feature <id>` only if you need to target a different one). This prints exactly `POLICY.md` + `checkpoint.md` + `task.md` + `result.md` (whichever exist) — nothing more. Never read `history/` or `runtime/` under `.agentflow/local/<feature-id>/`: they are audit-only trails, never a source of truth, and reading them defeats the purpose of this mode (bounded context per round).
 
 ### Converse with the Human and decide the next step
 
@@ -37,10 +37,10 @@ Use `checkpoint.md` (current state) and `result.md` (if a task just came back) t
 
 Write `task.md` with the objective, acceptance criteria, scope constraints, and pointers to relevant files (not their full content). Keep it short enough that a Coder starting a brand-new session can act on it without asking you to re-explain anything already in `POLICY.md`/`checkpoint.md`.
 
-If deciding what to ask for requires evidence from the repository (how something is currently implemented, whether a gap actually exists), delegate that investigation to a read-only sub-agent instead of reading the codebase yourself in this session — same reasoning as for the Coder (see `agentflow-local-coder`): a specific question in, a short structured answer with file:line references out. Then instruct the Coder in `task.md` to do the same for whatever open-ended investigation their task still needs.
+If deciding what to ask for requires evidence from the repository (how something is currently implemented, whether a gap actually exists), delegate that investigation to a read-only sub-agent instead of reading the codebase yourself in this session — same reasoning as for the Coder (see `agentflow-local-coder-resume`): a specific question in, a short structured answer with file:line references out. Then instruct the Coder in `task.md` to do the same for whatever open-ended investigation their task still needs.
 
 ```bash
-agentflow local task --feature <feature-id> <<'EOF'
+agentflow local task <<'EOF'
 # Task
 
 ## Objective
@@ -62,7 +62,7 @@ Read `result.md`. Check it against the acceptance criteria in the corresponding 
 
 When a plan is approved, a task finishes, the Human redirects the goal, or the session has grown large, overwrite `checkpoint.md` — objective/status, last task+result summary, files touched, test/build status, open risks, non-obvious decisions, next step — before doing anything else:
 ```bash
-agentflow local checkpoint --feature <feature-id> <<'EOF'
+agentflow local checkpoint <<'EOF'
 ...
 EOF
 ```
@@ -71,11 +71,11 @@ EOF
 
 For a decision that needs real back-and-forth with the Human (not a routine task assignment), start one:
 ```bash
-agentflow local discuss start --feature <feature-id>
+agentflow local discuss start
 ```
 Deliberate. When you reach a conclusion, close it with a self-contained `OUTCOME.md` — conclusions only, never the transcript:
 ```bash
-agentflow local discuss close --feature <feature-id> --id <id> <<'EOF'
+agentflow local discuss close --id <id> <<'EOF'
 ...
 EOF
 ```
@@ -83,11 +83,13 @@ Closing a discussion is a session-restart trigger (see next step).
 
 ### Restart your session at the right triggers
 
-You must end this conversation and start a brand-new one (reading only `POLICY.md`+`checkpoint.md`, plus `task.md`/`result.md` if a round is in flight) after any of:
+You must end this conversation and start a brand-new one — via `agentflow-local-resume`, reading only `POLICY.md`+`checkpoint.md`, plus `task.md`/`result.md` if a round is in flight — after any of:
 - Closing a deliberation (`OUTCOME.md` just written).
 - Approving a plan.
 - The Human changes the feature's objective.
 - This session's context has grown large enough that re-reading it is itself expensive.
+
+If the Human needs you to stop for an unrelated reason (end of day, interruption) before any of these triggers fire, use `agentflow-local-pause` instead of just closing the session — it captures whatever partial progress exists so `agentflow-local-resume` doesn't start blind.
 
 Before ending the session, make sure everything needed to resume is already in `checkpoint.md` — if you can't summarize it there, you're not at a valid restart point yet.
 
@@ -107,6 +109,6 @@ Before ending the session, make sure everything needed to resume is already in `
 ## Next Step
 
 Tell the user:
-> Task assigned. Signal the Coder session to act on task.md.
+> Task assigned. Signal the Coder session that a task is ready — a new one via agentflow-local-coder-init, or the next round via agentflow-local-coder-resume if it's already linked.
 
 Stop.

@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var allSkillsForTest = []SkillDef{InitSkill, SetupSkill, TurnSkill, CloseSkill, LocalControllerSkill, LocalCoderSkill}
+var allSkillsForTest = []SkillDef{InitSkill, SetupSkill, TurnSkill, CloseSkill, LocalInitSkill, LocalResumeSkill, LocalCoderInitSkill, LocalCoderResumeSkill, LocalPauseSkill}
 
 // TestGeneratedFilesAreFresh fails if the checked-in skill files in skills/
 // don't match what Render currently produces — i.e. someone hand-edited a
