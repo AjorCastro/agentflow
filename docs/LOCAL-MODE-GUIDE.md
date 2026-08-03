@@ -30,7 +30,7 @@ natural milestone.
 
 | Skill | Role | When |
 |---|---|---|
-| `agentflow-local-init` | Controller | Once, right after the Human decides in conversation that a feature will start. Bootstraps the worktree, `.agentflow/local/<id>/`, `POLICY.md`, and the first task. |
+| `agentflow-local-init` | Controller | Once, right after the Human decides in conversation that a feature will start. Two stages: Stage A (pre-worktree) analyzes the problem/need, assesses impact, and gets a `PLAN.md` approved by the Human; Stage B (post-approval) creates the worktree, promotes `.agentflow/local/<id>/` into it, drafts `POLICY.md`, and seeds the first task. A Human-requested fast track skips Stage A for small, well-understood fixes. |
 | `agentflow-local-coder-init` | Coder | Once, right after the Controller's bootstrap — confirms the link, then does the first task. |
 | `agentflow-local-resume` | Controller | Every session after the first — including after the Controller's own session restarts mid-feature. |
 | `agentflow-local-coder-resume` | Coder | Every task after the first — the Coder always starts a clean session per task, by design. |
@@ -59,33 +59,60 @@ you need to target a different feature than the current one.
 ## The files
 
 All coordination artifacts live under `.agentflow/local/<feature-id>/`,
-inside the feature worktree, excluded from Git. `agentflow close` deletes
-this whole folder — nothing to clean up by hand.
+excluded from Git. During Stage A this folder is *pending*, in the root repo
+checkout (no worktree exists yet); `agentflow local promote` moves it into
+the feature worktree at the start of Stage B. `agentflow close` deletes the
+whole folder from the worktree — nothing to clean up by hand.
 
 | File | Written by | Overwritten or appended | Read automatically by |
 |---|---|---|---|
-| `POLICY.md` | Controller, once at `local init` | overwritten only if a policy changes | both, on every session start |
+| `POLICY.md` | Controller, once at `local init` (Stage A) | overwritten only if a policy changes | both, on every session start |
+| `PLAN.md` | Controller, during Stage A, via `agentflow local plan` | overwritten at revisions and when checking off items | Controller only — kept out of the Coder's context on purpose |
 | `checkpoint.md` | Coder (and Controller when relevant) | overwritten at milestones | both, on every session start |
 | `task.md` | Controller | overwritten each round | Coder |
 | `result.md` | Coder | overwritten each round | Controller |
 | `discussions/<id>/OUTCOME.md` | Controller, via `discuss close` | written once, never edited after | Controller, next session after closing that deliberation |
-| `history/` | both, automatically | append-only, timestamped copies of prior task/result/checkpoint | nobody — audit trail for the Human only |
+| `history/` | both, automatically | append-only, timestamped copies of prior task/result/checkpoint/plan | nobody — audit trail for the Human only |
 
 `POLICY.md` holds what doesn't change turn to turn: feature ID, branch,
-worktree, root, validation gate, commit conventions, scope restrictions.
-`checkpoint.md` holds what does: overall status, last task/result summary,
-files touched, test/build state, open risks, next suggested step.
+worktree, root, validation gate, commit conventions (including a fixed
+"Commit discipline" rule — commit per completed `PLAN.md` item, never
+batched), scope restrictions. `PLAN.md` holds the problem statement, impact
+assessment, and sequenced checklist agreed with the Human before any code
+was written — it's what keeps the work sequence intact across Controller/
+Coder session restarts, instead of relying solely on `checkpoint.md` (which
+is overwritten, not accumulated, at every milestone). `checkpoint.md` holds
+what changes turn to turn: overall status, last task/result summary, files
+touched, test/build state, open risks, next suggested step.
 
 ## Quick start
 
-1. Decide the feature with the Human, then bootstrap it: in a Controller
-   session, invoke the `agentflow-local-init` skill. It creates the
-   worktree if it doesn't exist yet, runs:
+1. Decide the feature with the Human. In a Controller session, invoke the
+   `agentflow-local-init` skill — it runs in two stages.
+
+   **Stage A** (from the root repo checkout, before any worktree exists):
+   bootstraps a pending coordination folder, analyzes the problem/need with
+   the Human, delegates an impact assessment to a sub-agent, drafts and
+   validates `PLAN.md`, and gets the Human's go/no-go:
    ```
-   agentflow local init --feature <name> --branch feature/<name> --worktree .worktrees/<name>
+   agentflow local init --repo <root-repo-path> --feature <name>
+   agentflow local plan <<'EOF'
+   ...
+   EOF
    ```
-   drafts `POLICY.md` with you (validation gate, commit conventions), and
-   writes the first `task.md`.
+   A Human-requested fast track (small, well-understood, low-risk fix) skips
+   Stage A entirely — straight to Stage B with a single task and no `PLAN.md`.
+
+   **Stage B** (only after Stage A is approved): creates the worktree,
+   promotes the pending folder into it, fills in `POLICY.md`'s
+   branch/worktree/root fields plus validation gate and commit conventions,
+   and seeds the first `task.md` from `PLAN.md`'s first checklist item:
+   ```
+   agentflow local promote --feature <name> --from <root-repo-path>
+   agentflow local task <<'EOF'
+   ...
+   EOF
+   ```
 
 2. In a second, independent session opened in the same worktree, invoke the
    `agentflow-local-coder-init` skill. It confirms the link and loads
@@ -93,7 +120,9 @@ files touched, test/build state, open risks, next suggested step.
    ```
    agentflow local context --role coder
    ```
-   investigates, plans, implements, tests, then reports back:
+   investigates, plans, implements, tests, commits (one commit for this
+   task/`PLAN.md` item, per `POLICY.md`'s commit discipline), then reports
+   back:
    ```
    agentflow local result <<'EOF'
    ...
@@ -105,19 +134,22 @@ files touched, test/build state, open risks, next suggested step.
 
 3. Back in the Controller session — or a fresh one via `agentflow-local-resume`
    if a restart trigger fired — review `result.md`, discuss with the Human,
-   and either assign the next task or close the feature. Check progress any
-   time with:
+   check off the completed item in `PLAN.md`, and either assign the next
+   task (`PLAN.md`'s next unchecked item) or close the feature. Check
+   progress any time with:
    ```
    agentflow local status
    ```
+   which shows `PLAN.md`'s checklist progress as `N/M done` when a plan
+   exists.
 
 4. From here on, every session uses the **resume** skills, not the **init**
    ones: `agentflow-local-resume` for the Controller, `agentflow-local-coder-resume`
    for the Coder's next task. The Controller restarts its session (fresh
    `agentflow-local-resume` invocation) after closing a deliberation,
    approving a plan, or when the Human redirects the goal — recovering
-   purely from `POLICY.md`+`checkpoint.md`+`task.md`+`result.md`, never from
-   replaying the conversation.
+   purely from `POLICY.md`+`PLAN.md`+`checkpoint.md`+`task.md`+`result.md`,
+   never from replaying the conversation.
 
 5. If the Human needs to interrupt a session for a reason unrelated to a
    natural milestone (end of day, an unplanned interruption), invoke
@@ -138,7 +170,8 @@ files touched, test/build state, open risks, next suggested step.
    session recovers from `OUTCOME.md` + `checkpoint.md` alone, not from
    replaying the deliberation.
 
-7. When the feature is merged, close it exactly like GitHub mode:
+7. When every `PLAN.md` item is checked off (or the fast-tracked task is
+   done), close the feature exactly like GitHub mode:
    ```
    agentflow close --branch feature/<name> --root develop
    ```

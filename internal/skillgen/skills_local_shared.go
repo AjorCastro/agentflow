@@ -26,11 +26,11 @@ var controllerLoadStep = Step{
 var controllerDecideAndTaskSteps = []Step{
 	{
 		Title: "Converse with the Human and decide the next step",
-		Body:  "Use `checkpoint.md` (current state) and `result.md` (if a task just came back) to ground the conversation. Decide what happens next: a new task for the Coder, a decision the Human needs to make, or closing the feature.",
+		Body: "Use `checkpoint.md` (current state) and `result.md` (if a task just came back) to ground the conversation. If this feature has a `PLAN.md`, its next unchecked checklist item is what happens next by default — decide with the Human whether to follow it as-is, adjust it, or override it for something more urgent (a decision the Human needs to make, or closing the feature). Features bootstrapped via the fast track have no `PLAN.md` — for those, decide the next step from the conversation alone, same as before.",
 	},
 	{
 		Title: "Define the next task",
-		Body: "Write `task.md` with the objective, acceptance criteria, scope constraints, and pointers to relevant files (not their full content). Keep it short enough that a Coder starting a brand-new session can act on it without asking you to re-explain anything already in `POLICY.md`/`checkpoint.md`.\n\n" +
+		Body: "Write `task.md` with the objective, acceptance criteria, scope constraints, and pointers to relevant files (not their full content). Keep it short enough that a Coder starting a brand-new session can act on it without asking you to re-explain anything already in `POLICY.md`/`checkpoint.md`. When a `PLAN.md` exists, base the task directly on its next unchecked item rather than re-deriving scope from scratch.\n\n" +
 			"If deciding what to ask for requires evidence from the repository (how something is currently implemented, whether a gap actually exists), delegate that investigation to a read-only sub-agent instead of reading the codebase yourself in this session — same reasoning as for the Coder (see `agentflow-local-coder-resume`): a specific question in, a short structured answer with file:line references out. Then instruct the Coder in `task.md` to do the same for whatever open-ended investigation their task still needs.\n\n" +
 			"```bash\nagentflow local task <<'EOF'\n# Task\n\n## Objective\n...\n\n## Acceptance criteria\n- ...\n\n## Scope\n...\nEOF\n```",
 	},
@@ -42,7 +42,8 @@ var controllerDecideAndTaskSteps = []Step{
 var controllerReviewAndLifecycleSteps = []Step{
 	{
 		Title: "Review the Coder's result",
-		Body:  "Read `result.md`. Check it against the acceptance criteria in the corresponding `task.md`. If something is missing or wrong, write a new `task.md` describing the fix — do not implement it yourself.",
+		Body: "Read `result.md`. Check it against the acceptance criteria in the corresponding `task.md`. If something is missing or wrong, write a new `task.md` describing the fix — do not implement it yourself.\n\n" +
+			"If approved and this feature has a `PLAN.md`, check off the item this task completed (re-run `agentflow local plan` with that line changed from `- [ ]` to `- [x]` — the previous version is archived to `history/` automatically, same as any other round file). If that was the **last** unchecked item, this is full-plan completion, not just a single-task approval: do one final pass confirming every acceptance criterion across the whole plan is actually met, then proceed straight to final review → merge → `agentflow close`, the same way GitHub mode's Phase 3 approval is also the approval to merge.",
 	},
 	{
 		Title: "Checkpoint at a milestone",
@@ -103,6 +104,10 @@ var coderWorkSteps = []Step{
 		Title: "Investigate, plan, implement, test",
 		Body: "Do the work described in `task.md`, following whatever policies `POLICY.md` documents (validation gates, commit conventions, scope constraints). Use `git` normally for the actual code — branch, commits — local mode only changes the coordination channel, not how code is versioned.\n\n" +
 			"Whenever the task requires open-ended exploration (reading unfamiliar code across several files, running an experiment just to learn a fact, searching for where something is defined) — delegate that to a sub-agent instead of doing it in this session directly. Ask it a specific question and have it report back a short, structured answer with file:line references or concrete evidence, not full file dumps. This keeps this session's own context small, which is the entire point of local mode's per-task session model — reading through half the codebase yourself defeats it just as surely as re-reading old conversation history would.",
+	},
+	{
+		Title: "Commit your work",
+		Body:  "Before writing result.md, commit — per `POLICY.md`'s \"Commit discipline\" section, one commit for this task/PLAN.md item, never batched with other steps. A partial, working commit per step is what lets a later regression be isolated and reverted independently instead of taking the whole feature's history down with it.",
 	},
 	{
 		Title: "Write result.md",

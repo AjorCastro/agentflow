@@ -135,6 +135,12 @@ gate, if any — see AGENTS.md/CONTRIBUTING.md at the repo root.>
 <Fill in if this feature has commit-message or scope conventions beyond the
 repo's defaults.>
 
+## Commit discipline
+
+Commit after each completed PLAN.md checklist item, not in one final batch
+at the end — partial, working commits let a regression be isolated and
+reverted independently instead of taking the whole feature down with it.
+
 ## Never automatically read
 
 - history/ — audit trail only, append-only, never a source of truth.

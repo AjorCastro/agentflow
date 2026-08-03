@@ -200,6 +200,96 @@ func TestLocalInit_FailsIfNotGitRepo(t *testing.T) {
 	}
 }
 
+func TestLocalPromote_Success(t *testing.T) {
+	rootRepo := newGitRepo(t)
+	feature := "feat-promote"
+	initLocal(t, rootRepo, feature)
+
+	planCmd := newLocalPlanCmd()
+	planCmd.SetArgs([]string{"--repo", rootRepo, "--feature", feature})
+	withStdin(t, "# Plan\n- [ ] step 1\n", func() {
+		if err := planCmd.Execute(); err != nil {
+			t.Fatalf("plan write failed: %v", err)
+		}
+	})
+
+	worktree := t.TempDir()
+	runGit(t, worktree, "init", "-q", "-b", "main")
+
+	cmd := newLocalPromoteCmd()
+	cmd.SetArgs([]string{"--repo", worktree, "--from", rootRepo, "--feature", feature})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("promote failed: %v", err)
+	}
+
+	// Source no longer has the feature folder.
+	if _, err := os.Stat(filepath.Join(rootRepo, ".agentflow", "local", feature)); !os.IsNotExist(err) {
+		t.Errorf("expected source feature folder to be gone, err=%v", err)
+	}
+	// Source's CURRENT pointer was cleared.
+	if _, err := protocol.ReadCurrentFeature(rootRepo); err == nil {
+		t.Error("expected source CURRENT pointer to be cleared after promote")
+	}
+
+	// Destination has the full folder, including PLAN.md's content.
+	dst := filepath.Join(worktree, ".agentflow", "local", feature)
+	plan, err := os.ReadFile(filepath.Join(dst, "PLAN.md"))
+	if err != nil {
+		t.Fatalf("reading promoted PLAN.md: %v", err)
+	}
+	if !strings.Contains(string(plan), "step 1") {
+		t.Errorf("promoted PLAN.md missing content, got:\n%s", plan)
+	}
+	if _, err := os.Stat(filepath.Join(dst, "POLICY.md")); err != nil {
+		t.Errorf("expected POLICY.md to be promoted too: %v", err)
+	}
+
+	// Destination's CURRENT pointer now points at the feature.
+	current, err := protocol.ReadCurrentFeature(worktree)
+	if err != nil {
+		t.Fatalf("reading destination CURRENT: %v", err)
+	}
+	if current != feature {
+		t.Errorf("expected destination CURRENT = %q, got %q", feature, current)
+	}
+}
+
+func TestLocalPromote_FailsIfSourceMissing(t *testing.T) {
+	rootRepo := newGitRepo(t) // never initialized
+	worktree := newGitRepo(t)
+
+	cmd := newLocalPromoteCmd()
+	cmd.SetArgs([]string{"--repo", worktree, "--from", rootRepo, "--feature", "never-initialized"})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when source feature folder doesn't exist")
+	}
+	if !strings.Contains(err.Error(), "does not exist") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestLocalPromote_FailsIfDestinationAlreadyExists(t *testing.T) {
+	rootRepo := newGitRepo(t)
+	feature := "feat-dup-promote"
+	initLocal(t, rootRepo, feature)
+
+	worktree := newGitRepo(t)
+	initLocal(t, worktree, feature) // already promoted / initialized here
+
+	cmd := newLocalPromoteCmd()
+	cmd.SetArgs([]string{"--repo", worktree, "--from", rootRepo, "--feature", feature})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when destination feature folder already exists")
+	}
+	if !strings.Contains(err.Error(), "already exists") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
 func TestLocalRoundFile_WritesFromStdin(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -209,6 +299,7 @@ func TestLocalRoundFile_WritesFromStdin(t *testing.T) {
 		{"task", newLocalTaskCmd, "task.md"},
 		{"result", newLocalResultCmd, "result.md"},
 		{"checkpoint", newLocalCheckpointCmd, "checkpoint.md"},
+		{"plan", newLocalPlanCmd, "PLAN.md"},
 	}
 
 	for _, tc := range cases {
@@ -586,15 +677,63 @@ func TestLocalStatus_FailsWithoutInit(t *testing.T) {
 	}
 }
 
+func TestLocalStatus_ShowsPlanProgress(t *testing.T) {
+	repo := newGitRepo(t)
+	feature := "feat-status-plan"
+	initLocal(t, repo, feature)
+
+	planCmd := newLocalPlanCmd()
+	planCmd.SetArgs([]string{"--repo", repo, "--feature", feature})
+	withStdin(t, "# Plan\n- [x] step 1\n- [ ] step 2\n- [ ] step 3\n", func() {
+		if err := planCmd.Execute(); err != nil {
+			t.Fatalf("plan write failed: %v", err)
+		}
+	})
+
+	cmd := newLocalStatusCmd()
+	cmd.SetArgs([]string{"--repo", repo, "--feature", feature})
+	out := captureStdout(t, func() {
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("status failed: %v", err)
+		}
+	})
+
+	if !strings.Contains(out, "PLAN.md") || !strings.Contains(out, "(1/3 done)") {
+		t.Errorf("expected status output to show PLAN.md progress 1/3, got:\n%s", out)
+	}
+}
+
+func TestPlanProgress_CountsCheckboxes(t *testing.T) {
+	cases := []struct {
+		name     string
+		content  string
+		wantDone int
+		wantTot  int
+	}{
+		{"empty", "", 0, 0},
+		{"no checkboxes", "# Plan\nJust prose.\n", 0, 0},
+		{"mixed", "- [x] a\n- [ ] b\n- [X] c\n- [ ] d\n", 2, 4},
+		{"indented", "  - [x] a\n  - [ ] b\n", 1, 2},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			done, total := planProgress(tc.content)
+			if done != tc.wantDone || total != tc.wantTot {
+				t.Errorf("planProgress(%q) = (%d, %d), want (%d, %d)", tc.content, done, total, tc.wantDone, tc.wantTot)
+			}
+		})
+	}
+}
+
 func TestLocalContext_CoderExcludesResultAndAuditDirs(t *testing.T) {
 	repo := newGitRepo(t)
 	feature := "feat-context-coder"
 	initLocal(t, repo, feature)
 	localDir := filepath.Join(repo, ".agentflow", "local", feature)
 
-	// Write task.md and result.md so we can confirm the coder role excludes
-	// result.md even though it exists.
-	for _, name := range []string{"task.md", "result.md"} {
+	// Write task.md, result.md and PLAN.md so we can confirm the coder role
+	// excludes result.md and PLAN.md even though they exist.
+	for _, name := range []string{"task.md", "result.md", "PLAN.md"} {
 		if err := os.WriteFile(filepath.Join(localDir, name), []byte("# "+name+"\n"), 0644); err != nil {
 			t.Fatal(err)
 		}
@@ -624,6 +763,9 @@ func TestLocalContext_CoderExcludesResultAndAuditDirs(t *testing.T) {
 	if strings.Contains(out, "--- result.md ---") {
 		t.Errorf("coder context must not include result.md, got:\n%s", out)
 	}
+	if strings.Contains(out, "--- PLAN.md ---") {
+		t.Errorf("coder context must not include PLAN.md — keep the Coder's context bounded to task.md, got:\n%s", out)
+	}
 	if strings.Contains(out, "SECRET-HISTORY-CONTENT") || strings.Contains(out, "SECRET-RUNTIME-CONTENT") {
 		t.Errorf("coder context must never include history/ or runtime/ content, got:\n%s", out)
 	}
@@ -635,7 +777,7 @@ func TestLocalContext_ControllerIncludesResult(t *testing.T) {
 	initLocal(t, repo, feature)
 	localDir := filepath.Join(repo, ".agentflow", "local", feature)
 
-	for _, name := range []string{"task.md", "result.md"} {
+	for _, name := range []string{"task.md", "result.md", "PLAN.md"} {
 		if err := os.WriteFile(filepath.Join(localDir, name), []byte("# "+name+"\n"), 0644); err != nil {
 			t.Fatal(err)
 		}
@@ -655,7 +797,7 @@ func TestLocalContext_ControllerIncludesResult(t *testing.T) {
 		}
 	})
 
-	for _, want := range []string{"--- POLICY.md ---", "--- checkpoint.md ---", "--- task.md ---", "--- result.md ---"} {
+	for _, want := range []string{"--- POLICY.md ---", "--- PLAN.md ---", "--- checkpoint.md ---", "--- task.md ---", "--- result.md ---"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("expected controller context output to include %q, got:\n%s", want, out)
 		}

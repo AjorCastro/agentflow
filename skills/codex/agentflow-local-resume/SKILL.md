@@ -31,11 +31,11 @@ agentflow local context --role controller
 
 ### Converse with the Human and decide the next step
 
-Use `checkpoint.md` (current state) and `result.md` (if a task just came back) to ground the conversation. Decide what happens next: a new task for the Coder, a decision the Human needs to make, or closing the feature.
+Use `checkpoint.md` (current state) and `result.md` (if a task just came back) to ground the conversation. If this feature has a `PLAN.md`, its next unchecked checklist item is what happens next by default — decide with the Human whether to follow it as-is, adjust it, or override it for something more urgent (a decision the Human needs to make, or closing the feature). Features bootstrapped via the fast track have no `PLAN.md` — for those, decide the next step from the conversation alone, same as before.
 
 ### Define the next task
 
-Write `task.md` with the objective, acceptance criteria, scope constraints, and pointers to relevant files (not their full content). Keep it short enough that a Coder starting a brand-new session can act on it without asking you to re-explain anything already in `POLICY.md`/`checkpoint.md`.
+Write `task.md` with the objective, acceptance criteria, scope constraints, and pointers to relevant files (not their full content). Keep it short enough that a Coder starting a brand-new session can act on it without asking you to re-explain anything already in `POLICY.md`/`checkpoint.md`. When a `PLAN.md` exists, base the task directly on its next unchecked item rather than re-deriving scope from scratch.
 
 If deciding what to ask for requires evidence from the repository (how something is currently implemented, whether a gap actually exists), delegate that investigation to a read-only sub-agent instead of reading the codebase yourself in this session — same reasoning as for the Coder (see `agentflow-local-coder-resume`): a specific question in, a short structured answer with file:line references out. Then instruct the Coder in `task.md` to do the same for whatever open-ended investigation their task still needs.
 
@@ -57,6 +57,8 @@ EOF
 ### Review the Coder's result
 
 Read `result.md`. Check it against the acceptance criteria in the corresponding `task.md`. If something is missing or wrong, write a new `task.md` describing the fix — do not implement it yourself.
+
+If approved and this feature has a `PLAN.md`, check off the item this task completed (re-run `agentflow local plan` with that line changed from `- [ ]` to `- [x]` — the previous version is archived to `history/` automatically, same as any other round file). If that was the **last** unchecked item, this is full-plan completion, not just a single-task approval: do one final pass confirming every acceptance criterion across the whole plan is actually met, then proceed straight to final review → merge → `agentflow close`, the same way GitHub mode's Phase 3 approval is also the approval to merge.
 
 ### Checkpoint at a milestone
 
